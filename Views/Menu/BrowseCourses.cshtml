@@ -1,0 +1,11 @@
+@model List<quiz_project.ViewModels.QuizViewModel>
+
+<h1>Feel free to browse all public quizzes</h1>
+
+<div class="container">
+    <div class="row align-items-start">
+        @{
+            await Html.RenderPartialAsync("~/Views/Shared/_CourseDetails.cshtml");
+        }
+    </div>
+</div>

@@ -1,0 +1,53 @@
+@model quiz_project.ViewModels.QuizStatisticsModel
+
+<div class="stats-wrapper">
+    <div class="d-flex justify-content-between align-items-center">
+        <h3 class="stats-title">Here's statistics for @Model.Title</h3>
+        <form asp-controller="Quiz" asp-action="Index" method="get">
+            <button type="submit" class="btn btn-danger text-white">Return</button>
+        </form>
+    </div>
+
+    @{
+        var quizSummaryViewModel = @Model.quizSummaryViewModel;
+    }
+
+    <div>
+        <strong>Average points:</strong> @Model.AverageScore |
+        <strong>Average percentage:</strong> @Model.ScorePercentage%
+    </div>
+
+    <div class="stats-section-title">
+        Your best attempt: @quizSummaryViewModel.Score / @quizSummaryViewModel.TotalScore
+    </div>
+
+    <div class="stats-section-title">Leaderboard</div>
+    <div>
+        @for (int i = 0; i < @quizSummaryViewModel.TopPlayerScores.Count(); i++)
+        {
+            var playerScore = @quizSummaryViewModel.TopPlayerScores[i];
+
+            <div class="leaderboard-entry" id="score-@i">
+                <strong>@playerScore.UserName</strong> | score @playerScore.PlayerScore
+            </div>
+        }
+    </div>
+
+    @foreach (var question in @Model.quizSummaryViewModel.Questions)
+    {
+        <div class="question">
+            <h5>@question.Description</h5>
+            <ul>
+                @foreach (var answer in question.Answers)
+                {
+                    var percentage = answer.SelectedByCount > 0
+                    ? Math.Round((double)answer.SelectedByCount / Model.UsersFinished * 100, 2)
+                    : 0;
+                    <li>@answer.Description |
+                        Chosen by @answer.SelectedByCount users |
+                        Percentage: @percentage%</li>
+                }
+            </ul>
+        </div>
+    }
+</div>

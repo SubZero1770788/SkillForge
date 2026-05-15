@@ -1,0 +1,13 @@
+@model List<ActiveUserViewModel>
+
+<div class="section-title">Active Users</div>
+
+<div class="user-list">
+    @foreach (var user in Model)
+    {
+        <div class="user-card">
+            <div class="user-name">@user.UserName</div>
+            <div class="user-score">Total score from all attempts: @user.TotalScore</div>
+        </div>
+    }
+</div>

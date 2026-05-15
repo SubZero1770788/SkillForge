@@ -1,0 +1,33 @@
+@model UserSettingsWrapperViewModel;
+
+<div class="settings-wrapper">
+
+    <div class="settings-form">
+        <div class="form-title">Change Email</div>
+        <form asp-action="ChangeEmail" asp-controller="User" method="post">
+            <input asp-for="EmailChangeViewModel.Password" type="password" placeholder="Current Password" />
+            <input asp-for="EmailChangeViewModel.oldEmail" type="email" placeholder="Old Email" />
+            <input asp-for="EmailChangeViewModel.newEmail" type="email" placeholder="New Email" />
+            <input asp-for="EmailChangeViewModel.confirmedNewEmail" type="email" placeholder="Confirm New Email" />
+            <button type="submit">Change Email</button>
+        </form>
+    </div>
+
+    <div class="settings-form">
+        <div class="form-title">Change Password</div>
+        <form asp-action="ChangePassword" asp-controller="User" method="post">
+            <input asp-for="PasswordChangeViewModel.oldPassword" type="password" placeholder="Old Password" />
+            <input asp-for="PasswordChangeViewModel.newPassword" type="password" placeholder="New Password" />
+            <input asp-for="PasswordChangeViewModel.confirmedNewPassword" type="password"
+                placeholder="Confirm New Password" />
+            <button type="submit">Change Password</button>
+        </form>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] is string msg)
+{
+    <div class="alert alert-success">
+        @msg
+    </div>
+}
