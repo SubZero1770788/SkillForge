@@ -22,7 +22,8 @@ using static quiz_project.ViewModels.QuizSummaryViewModel;
 namespace quiz_project.Controllers
 {
 
-    public class CourseController(ICourseQueryService courseQueryService, IAccessValidationService accessValidationService, UserManager<User> userManager) : Controller
+    public class CourseController(ICourseQueryService courseQueryService, ICourseService courseService,
+    IAccessValidationService accessValidationService, UserManager<User> userManager) : Controller
     {
         [HttpGet]
         public async Task<IActionResult> Index()
@@ -30,9 +31,9 @@ namespace quiz_project.Controllers
             var user = await userManager.GetUserAsync(User);
             if (user is null) return RedirectToAction("Register", "User")!;
 
-            var quizViewModels = await courseQueryService.GetUserCoursesAsync(user.Id);
+            var courseViewModels = await courseQueryService.GetUserCoursesAsync(user.Id);
 
-            return View(quizViewModels);
+            return View(courseViewModels);
         }
 
         // [HttpGet]
@@ -69,106 +70,106 @@ namespace quiz_project.Controllers
         //     return View(quizStatisticsModel);
         // }
 
-        // [HttpGet, ActionName("Create")]
-        // public async Task<IActionResult> CreateNewQuizAsync()
-        // {
-        //     var user = await userManager.GetUserAsync(User);
-        //     if (user is null) return RedirectToAction("Register", "User")!;
+        [HttpGet, ActionName("Create")]
+        public async Task<IActionResult> CreateNewCourseAsync()
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
 
-        //     return View();
-        // }
+            return View();
+        }
 
-        // [HttpPost, ActionName("Create")]
-        // public async Task<IActionResult> CreateNewQuizAsync(QuizViewModel quizViewModel)
-        // {
-        //     if (ModelState.IsValid)
-        //     {
-        //         var user = await userManager.GetUserAsync(User);
-        //         if (user is null) return RedirectToAction("Register", "User")!;
+        [HttpPost, ActionName("Create")]
+        public async Task<IActionResult> CreateNewQuizAsync(CourseViewModel courseViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await userManager.GetUserAsync(User);
+                if (user is null) return RedirectToAction("Register", "User")!;
 
-        //         var (success, error) = await quizService.CreateAsync(quizViewModel, user.Id);
-        //         if (!success)
-        //         {
-        //             ModelState.AddModelError(String.Empty, error);
-        //             return View(quizViewModel);
-        //         }
+                var (success, error) = await courseService.CreateAsync(courseViewModel, user.Id);
+                if (!success)
+                {
+                    ModelState.AddModelError(String.Empty, error);
+                    return View(courseViewModel);
+                }
 
-        //         return RedirectToAction("Index");
-        //     }
-        //     return View(quizViewModel);
-        // }
+                return RedirectToAction("Index");
+            }
+            return View(courseViewModel);
+        }
 
-        // [HttpGet, ActionName("Edit")]
-        // public async Task<IActionResult> EditQuizAsync(int quizId)
-        // {
-        //     var user = await userManager.GetUserAsync(User);
-        //     if (user is null) return RedirectToAction("Register", "User")!;
-        //     if (!await quizQueryService.CheckIfPublicAsync(quizId) && !User.IsInRole("Admin"))
-        //     {
-        //         var owns = await accessValidationService.UserOwnsQuizAsync(quizId, user);
-        //         if (!owns) return RedirectToAction("Index")!;
-        //     }
+        [HttpGet, ActionName("Edit")]
+        public async Task<IActionResult> EditCourseAsync(int courseId)
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+            if (!await courseQueryService.CheckIfPublicAsync(courseId) && !User.IsInRole("Admin"))
+            {
+                var owns = await accessValidationService.UserOwnsCourseAsync(courseId, user);
+                if (!owns) return RedirectToAction("Index")!;
+            }
 
-        //     var quizViewModel = await quizService.GetEditAsync(quizId);
+            var courseViewModel = await courseService.GetEditAsync(courseId);
 
-        //     return View(quizViewModel);
-        // }
+            return View(courseViewModel);
+        }
 
-        // [HttpPost, ActionName("Edit")]
-        // public async Task<IActionResult> EditQuizAsync(QuizViewModel quizViewModel)
-        // {
-        //     if (ModelState.IsValid)
-        //     {
-        //         var user = await userManager.GetUserAsync(User);
-        //         if (user is null) return RedirectToAction("Register", "User")!;
-        //         if (!await quizQueryService.CheckIfPublicAsync(quizViewModel.QuizId) && !User.IsInRole("Admin"))
-        //         {
-        //             var owns = await accessValidationService.UserOwnsQuizAsync(quizViewModel.QuizId, user);
-        //             if (!owns) return RedirectToAction("Index")!;
-        //         }
+        [HttpPost, ActionName("Edit")]
+        public async Task<IActionResult> EditCourseAsync(CourseViewModel courseViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await userManager.GetUserAsync(User);
+                if (user is null) return RedirectToAction("Register", "User")!;
+                if (!await courseQueryService.CheckIfPublicAsync(courseViewModel.CourseId) && !User.IsInRole("Admin"))
+                {
+                    var owns = await accessValidationService.UserOwnsCourseAsync(courseViewModel.CourseId, user);
+                    if (!owns) return RedirectToAction("Index")!;
+                }
 
-        //         var (success, errors) = await quizService.PostEditAsync(quizViewModel, user.Id);
+                var (success, errors) = await courseService.PostEditAsync(courseViewModel, user.Id);
 
-        //         if (!success)
-        //         {
-        //             foreach (var er in errors)
-        //             {
-        //                 ModelState.AddModelError(String.Empty, er);
-        //             }
-        //             return View(quizViewModel);
-        //         }
+                if (!success)
+                {
+                    foreach (var er in errors)
+                    {
+                        ModelState.AddModelError(String.Empty, er);
+                    }
+                    return View(courseViewModel);
+                }
 
-        //         return RedirectToAction("Index");
+                return RedirectToAction("Index");
 
-        //     }
-        //     return RedirectToAction("Edit");
-        // }
+            }
+            return RedirectToAction("Edit");
+        }
 
-        // [HttpPost, ActionName("Delete")]
-        // public async Task<IActionResult> DeleteQuizAsync(int Id)
-        // {
-        //     var user = await userManager.GetUserAsync(User);
-        //     if (user is null) return RedirectToAction("Register", "User")!;
-        //     if (!await quizQueryService.CheckIfPublicAsync(Id) && !User.IsInRole("Admin"))
-        //     {
-        //         var owns = await accessValidationService.UserOwnsQuizAsync(Id, user);
-        //         if (!owns) return RedirectToAction("Index")!;
-        //     }
+        [HttpPost, ActionName("Delete")]
+        public async Task<IActionResult> DeleteCourseAsync(int Id)
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+            if (!await courseQueryService.CheckIfPublicAsync(Id) && !User.IsInRole("Admin"))
+            {
+                var owns = await accessValidationService.UserOwnsCourseAsync(Id, user);
+                if (!owns) return RedirectToAction("Index")!;
+            }
 
-        //     try
-        //     {
-        //         await quizService.DeleteAsync(Id);
-        //     }
-        //     catch (Exception e)
-        //     {
-        //         ModelState.AddModelError(String.Empty, $"Something went wrong: {e}");
-        //     }
+            try
+            {
+                await courseService.DeleteAsync(Id);
+            }
+            catch (Exception e)
+            {
+                ModelState.AddModelError(String.Empty, $"Something went wrong: {e}");
+            }
 
-        //     return RedirectToAction("Index");
-        // }
+            return RedirectToAction("Index");
+        }
 
         // [HttpGet, ActionName("Game")]
-        // public async Task<IActionResult> LaunchQuizAsync(int quizId)
+        // public async Task<IActionResult> LaunchCourseAsync(int courseId)
         // {
         //     var user = await userManager.GetUserAsync(User);
         //     if (user is null) return RedirectToAction("Register", "User")!;

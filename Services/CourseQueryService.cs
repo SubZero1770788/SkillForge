@@ -22,9 +22,32 @@ namespace quiz_project.Services
             return false;
         }
 
-        public Task<List<CourseViewModel>> GetUserCoursesAsync(int userId)
+        public async Task<List<CourseViewModel>> GetUserCoursesAsync(int userId)
         {
-            throw new NotImplementedException();
+            var courses = await courseRepository.GetCoursesByUserAsync(userId);
+
+            var courseViewModels = new List<CourseViewModel>();
+            foreach (Course c in courses)
+            {
+                var courseViewModel = courseMapper.ToCourseViewModel(c);
+                courseViewModels.Add(courseViewModel);
+            }
+
+            return courseViewModels;
+        }
+
+        public async Task<List<CourseViewModel>> GetUserSignedUpCoursesAsync(int userId)
+        {
+            var courses = await courseRepository.GetCoursesByUserAsync(userId);
+
+            var courseViewModels = new List<CourseViewModel>();
+            foreach (Course c in courses)
+            {
+                var courseViewModel = courseMapper.ToCourseViewModel(c);
+                courseViewModels.Add(courseViewModel);
+            }
+
+            return courseViewModels;
         }
 
         // public async Task<(bool, QuizStatisticsModel?)> GetQuizStatisticsAsync(int quizId, int userId)
@@ -49,18 +72,6 @@ namespace quiz_project.Services
         // }
 
 
-        public async Task<List<CourseViewModel>> GetUserSignedUpCoursesAsync(int userId)
-        {
-            var courses = await courseRepository.GetCoursesByUserAsync(userId);
 
-            var courseViewModels = new List<CourseViewModel>();
-            foreach (Course c in courses)
-            {
-                var courseViewModel = courseMapper.ToCourseViewModel(c);
-                courseViewModels.Add(courseViewModel);
-            }
-
-            return courseViewModels;
-        }
     }
 }

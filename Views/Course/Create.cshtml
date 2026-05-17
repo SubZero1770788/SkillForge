@@ -1,4 +1,4 @@
-@model quiz_project.ViewModels.QuizViewModel;
+@model quiz_project.ViewModels.CourseViewModel;
 
 @section Scripts {
     <script src="~/js/quizEditor.js"></script>
@@ -15,7 +15,7 @@
 
 <div class="form-wrapper">
     <div id="quiz-mode" data-mode="create"></div>
-    <h1 class="form-section-title">Create New Quiz</h1>
+    <h1 class="form-section-title">Create New Course</h1>
 
     <form method="post">
         <div class="row">
@@ -34,7 +34,7 @@
                 </div>
 
                 <div class="form-group mb-3">
-                    <label asp-for="IsPublic">Make quiz public?</label>
+                    <label asp-for="IsPublic">Make course public?</label>
 
                     <div class="form-check">
                         <input class="form-check-input" type="radio" asp-for="IsPublic" value="true" />
@@ -47,32 +47,18 @@
                     </div>
                 </div>
 
-                <div class="form-group mb-3">
-                    <label asp-for="IsRandomized">Make quiz randomized?</label>
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" asp-for="IsRandomized" value="true" />
-                        <label class="form-check-label">Yes</label>
-                    </div>
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" asp-for="IsRandomized" value="false" />
-                        <label class="form-check-label">No</label>
-                    </div>
-                </div>
-
                 <button type="submit" class="btn btn-primary mt-2">Create</button>
                 <div asp-validation-summary="All" class="text-danger mt-2"></div>
             </div>
 
             <div class="col-md-6 d-flex flex-column align-items-end">
                 <div class="form-group">
-                    <button type="button" class="btn btn-secondary" onclick="addQuestion()">
-                        Add Question
+                    <button type="button" class="btn btn-secondary" onclick="addModule()">
+                        Add Module
                     </button>
                 </div>
 
-                <div id="questions-container"></div>
+                <div id="modules-container"></div>
             </div>
         </div>
     </form>

@@ -14,6 +14,9 @@ namespace quiz_project.Entities.Definition
         public Quiz Quiz { get; set; }
         public int CurrentPage { get; set; }
         public int QuestionCount { get; set; }
+        public bool IsRandomized { get; set; }
         public List<AnswerState> Answers { get; set; } = new();
+        public List<OnGoingQuizQuestion> Questions { get; set; } = new();
+
     }
 }

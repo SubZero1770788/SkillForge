@@ -7,13 +7,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using quiz_project.Entities;
+using quiz_project.Entities.Repositories;
 using quiz_project.Interfaces;
 using quiz_project.Services;
 using quiz_project.ViewModels;
 
 namespace quiz_project.Controllers
 {
-    public class MenuController(IQuizRepository quizRepository, UserManager<User> userManager, IUserService userService) : Controller
+    public class MenuController(IQuizRepository quizRepository, ICourseRepository courseRepository, ICourseMapper courseMapper,
+    UserManager<User> userManager, IUserService userService) : Controller
     {
         [HttpGet, ActionName("Browse")]
         public async Task<IActionResult> BrowsePublicQuizzes()
@@ -46,6 +48,30 @@ namespace quiz_project.Controllers
             }
 
             return View(quizViewModels);
+        }
+
+        [HttpGet, ActionName("BrowseCourses")]
+        public async Task<IActionResult> BrowsePublicCourses()
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+
+            var courses = await courseRepository.GetPublicCourses();
+
+            var courseViewModels = new List<CourseViewModel>();
+            foreach (Course c in courses)
+            {
+                var courseViewModel = new CourseViewModel
+                {
+                    CourseId = c.CourseId,
+                    Title = c.Title,
+                    Description = c.Description,
+                    IsPublic = c.IsPublic
+                };
+                courseViewModels.Add(courseViewModel);
+            }
+
+            return View(courseViewModels);
         }
 
         [HttpGet, ActionName("Active")]

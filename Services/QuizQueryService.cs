@@ -21,6 +21,13 @@ namespace quiz_project.Services
             return false;
         }
 
+        public async Task<bool> CheckIfRandomizedAsync(int Id)
+        {
+            var quiz = await quizRepository.GetQuizByIdAsync(Id);
+            if (quiz.IsRandomized) return true;
+            return false;
+        }
+
         public async Task<(bool, QuizStatisticsModel?)> GetQuizStatisticsAsync(int quizId, int userId)
         {
             var allQuizAttempts = await attemptRepository.GetAllAttemptsAsync(quizId);

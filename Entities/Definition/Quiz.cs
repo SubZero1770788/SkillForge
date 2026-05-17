@@ -12,6 +12,7 @@ namespace quiz_project.Entities
         public required string Description { get; set; }
         public int TotalScore { get; set; }
         public bool IsPublic { get; set; }
+        public bool IsRandomized { get; set; }
         // public Chapter Chapter { get; set; }
         // public required int ChapterId { get; set; }
         public List<Question> Questions { get; set; } = new();

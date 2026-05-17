@@ -46,6 +46,12 @@ namespace quiz_project.Infrastructure
                             Id = 3,
                             Name = "Admin",
                             NormalizedName = "ADMIN"
+                        },
+                        new Role()
+                        {
+                            Id = 4,
+                            Name = "Creator",
+                            NormalizedName = "CREATOR"
                         }
                     };
 
@@ -119,14 +125,14 @@ namespace quiz_project.Infrastructure
                         Title = "My first course",
                         Description = "This course has no other meaning",
                         IsPublic = true,
-                        UserId = 4
+                        UserId = 5
                     },
                     new Course{
                         CourseId = 2,
                         Title = "My second course",
                         Description = "I did not know I can create more of them !",
                         IsPublic = false,
-                        UserId = 4
+                        UserId = 5
                     }
                 };
 

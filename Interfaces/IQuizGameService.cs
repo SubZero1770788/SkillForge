@@ -12,5 +12,8 @@ namespace quiz_project.Interfaces
     {
         public Task<(bool, QuizSummaryViewModel?)> AttemptSummary(int quizId, User user);
         public Task<QuizViewModel> LaunchQuizAsync(int quizId);
+        Task StartQuizAsync(int quizId, int userId);
+        Task<(bool Success, GameViewModel? GameViewModel)> GetPlayAsync(int quizId, int userId);
+        Task<(bool Finished, GameViewModel? GameViewModel)> SubmitPlayAsync(GameViewModel model, int userId);
     }
 }

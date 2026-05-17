@@ -16,6 +16,7 @@ namespace quiz_project.ViewModels
         [Required]
         public string Description { get; set; }
         public bool IsPublic { get; set; }
+        public bool IsRandomized { get; set; }
         public List<QuestionViewModel> Questions { get; set; } = new();
         public int QuestionCount => Questions.Count;
         public int TotalScore => Questions.Sum(q => q.QuestionScore);

@@ -126,6 +126,7 @@ Interfaces/
  ICourseMapper.cs
  ICourseQueryService.cs
  ICourseRepository.cs
+ ICourseService.cs
  IOnGoingQuizRepository.cs
  IPaginationService.cs
  IQuizGameService.cs
@@ -146,6 +147,7 @@ RuntimeModels/QuizMetaData.cs
 Services/
  AccessValidationService.cs
  CourseQueryService.cs
+ CourseService.cs
  PaginationService.cs
  QuizGameService.cs
  QuizQueryService.cs
@@ -540,6 +542,10 @@ ViewModels/
 obj/Debug/net8.0/quiz_project.GeneratedMSBuildEditorConfig.editorconfig
 
 [additionalFiles]
+Views/Course/
+ Create.cshtml
+ Edit.cshtml
+ Index.cshtml
 Views/Menu/
  Active.cshtml
  Browse.cshtml
@@ -570,6 +576,10 @@ Views/
  _ViewStart.cshtml
 
 [dynamicFiles]
+Views/Course/
+ Create.cshtml
+ Edit.cshtml
+ Index.cshtml
 Views/Menu/
  Active.cshtml
  Browse.cshtml

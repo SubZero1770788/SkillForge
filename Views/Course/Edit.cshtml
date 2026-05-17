@@ -1,31 +1,34 @@
-@model quiz_project.ViewModels.QuizViewModel;
+@model quiz_project.ViewModels.CourseViewModel;
 
 @section Scripts {
     <script src="~/js/quizEditor.js"></script>
 
     <script>
+        @* 
+        //TO TRZEBA ZROBIĆ DLA MODUŁÓW I ROZDZIAŁÓW
+        
         let questionCounter = @Model.Questions.Count();
 
         function updateCounter() {
-        questionCounter++;
+            questionCounter++;
         }
 
         function hideMessage() {
-        var message = document.querySelector(".alert-info");
-        if (message) {
-        document.querySelector(".alert-info").style.display = "none";
-        }
-        }
+            var message = document.querySelector(".alert-info");
+            if (message) {
+                document.querySelector(".alert-info").style.display = "none";
+            }
+        } *@
     </script>
 }
 
 <div class="form-wrapper">
     <div class="d-flex justify-content-between align-items-center">
-        <h1>Edit This Quiz</h1>
+        <h1>Edit This Course</h1>
 
 
-        <form asp-controller="Quiz" asp-action="Index" method="get" class="col">
-            <button type="submit" class="btn btn-danger text-white">Return</button>
+        <form asp-controller="Course" asp-action="Index" method="get" class="col">
+            <button type="submit" class="btn btn-danger text-white">Cancel</button>
         </form>
     </div>
 
@@ -46,7 +49,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label asp-for="IsPublic">Make quiz public?</label>
+                    <label asp-for="IsPublic">Make course public?</label>
 
                     <div class="form-check">
                         <input class="form-check-input" type="radio" asp-for="IsPublic" value="true" />
@@ -58,28 +61,17 @@
                         <label class="form-check-label">No</label>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label asp-for="IsRandomized">Make quiz randomized?</label>
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" asp-for="IsRandomized" value="true" />
-                        <label class="form-check-label">Yes</label>
-                    </div>
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" asp-for="IsRandomized" value="false" />
-                        <label class="form-check-label">No</label>
-                    </div>
-                </div>
 
                 <button type="submit" class="btn btn-primary mt-2">Update</button>
             </div>
 
-            <div class="col-md-6 d-flex flex-column align-items-end">
-                @if (!Model.Questions.Any())
+            @*
+            // TO TAK SAMO OGARNĄĆ DLA MODUŁÓW I ROZDZIAŁÓW
+             <div class="col-md-6 d-flex flex-column align-items-end">
+                @if (!Model.Modules.Any())
                 {
                     <div class="alert alert-info">
-                        This quiz has no questions yet.
+                        This course has no modules yet.
                     </div>
                 }
 
@@ -92,29 +84,29 @@
                         <input type="hidden" name="Questions[@i].QuestionId" value="@Model.Questions[i].QuestionId" />
                         <input type="hidden" name="Questions[@qIndex].Index" value="@qIndex" />
                         <div type="hidden" class="border p-3 mb-3 bg-light question-box" id="question-@qIndex"
-                             data-question-index="@qIndex">
+                            data-question-index="@qIndex">
                             <button type="button" class="btn btn-danger mb-2"
-                                    onclick="removeQuestion(@qIndex)">Remove</button>
+                                onclick="removeQuestion(@qIndex)">Remove</button>
                             <h5>Question @(i + 1)</h5>
 
                             <div class="form-group">
                                 <label>Description</label>
                                 <input name="Questions[@i].Description" asp-for="@question.Description"
-                                       class="form-control" />
+                                    class="form-control" />
                                 <span asp-validation-for="@question.Description" class="text-danger"></span>
                             </div>
 
                             <div class="form-group">
                                 <label>Score</label>
                                 <input name="Questions[@i].QuestionScore" asp-for="@question.QuestionScore"
-                                       class="form-control" />
+                                    class="form-control" />
                                 <span asp-validation-for="@question.QuestionScore" class="text-danger"></span>
                             </div>
 
                             <div class="form-group">
                                 <label>How many answers?</label>
                                 <input type="number" min="1" max="10" class="form-control" placeholder="e.g. 4"
-                                       onchange="addAnswers(this, ${questionCounter})" />
+                                    onchange="addAnswers(this, ${questionCounter})" />
                             </div>
 
                             @for (int j = 0; j < question.Answers.Count; j++)
@@ -124,12 +116,12 @@
                                     <input type="hidden" name="Questions[@i].Answers[@j].AnswerId" value="@answer.AnswerId" />
                                     <label>Answer @(j + 1)</label>
                                     <input name="Questions[@i].Answers[@j].Description" asp-for="@answer.Description"
-                                           class="form-control mb-1" />
+                                        class="form-control mb-1" />
                                     <span asp-validation-for="@answer.Description" class="text-danger"></span>
                                     <div class="form-check">
                                         <label class="form-check-label">Correct</label>
                                         <input name="Questions[@i].Answers[@j].IsCorrect" asp-for="@answer.IsCorrect"
-                                               class="form-check-input" />
+                                            class="form-check-input" />
                                         <span asp-validation-for="@answer.IsCorrect" class="text-danger"></span>
                                     </div>
                                 </div>
@@ -140,7 +132,7 @@
                 <button type="button" class="btn btn-secondary" onclick="addQuestion(), hideMessage()">
                     Add Question
                 </button>
-            </div>
+            </div> *@
 
             <div asp-validation-summary="All" class="text-danger mt-2"></div>
         </div>

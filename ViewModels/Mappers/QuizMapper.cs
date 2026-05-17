@@ -21,6 +21,7 @@ namespace quiz_project.ViewModels.Mappers
                 TotalScore = quizViewModel.Questions.Sum(qvm => qvm.QuestionScore),
                 UserId = userId,
                 IsPublic = quizViewModel.IsPublic,
+                IsRandomized = quizViewModel.IsRandomized,
                 Questions = quizViewModel.Questions.Select((qvm, index) => new Question
                 {
                     QuizId = quizViewModel.QuizId,
@@ -101,6 +102,7 @@ namespace quiz_project.ViewModels.Mappers
             var quizViewModel = new QuizViewModel
             {
                 IsPublic = quiz.IsPublic,
+                IsRandomized = quiz.IsRandomized,
                 QuizId = quiz!.QuizId,
                 Title = quiz.Title,
                 Description = quiz.Description,

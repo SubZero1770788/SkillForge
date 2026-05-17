@@ -9,10 +9,10 @@
             <div class="quiz-title">@courseViewModel?.Title</div>
             <div class="quiz-description">@courseViewModel?.Description</div>
 
-            @if (currentAction == "Quiz")
+            @if (currentAction == "Course")
             {
                 <div class="quiz-meta">
-                    @(courseViewModel!.IsPublic ? "Quiz is public" : "Quiz is private")
+                    @(courseViewModel!.IsPublic ? "Course is public" : "Course is private")
                 </div>
             }
 
@@ -21,30 +21,30 @@
                 Total Chapters: BRAK DANYCH<br />
             </div>
 
-            @* <div class="quiz-buttons no-wrap-buttons">
-                <form asp-controller="Quiz" asp-action="Game" method="get">
-                    <input type="hidden" name="QuizId" value="@courseViewModel?.QuizId" />
-                    <button type="submit" class="btn btn-success text-white">Play</button>
+            <div class="quiz-buttons no-wrap-buttons">
+                <form asp-controller="Course" asp-action="Game" method="get">
+                    <input type="hidden" name="CourseId" value="@courseViewModel?.CourseId" />
+                    <button type="submit" class="btn btn-success text-white">View Course</button>
                 </form>
 
-                @if (currentAction == "Quiz" || User.IsInRole("Admin"))
+                @if (currentAction == "Course" || User.IsInRole("Admin"))
                 {
-                    <form asp-controller="Quiz" asp-action="Edit" method="get">
-                        <input type="hidden" name="QuizId" value="@courseViewModel?.QuizId" />
+                    <form asp-controller="Course" asp-action="Edit" method="get">
+                        <input type="hidden" name="CourseId" value="@courseViewModel?.CourseId" />
                         <button type="submit" class="btn btn-warning text-white">Edit</button>
                     </form>
 
-                    <form asp-controller="Quiz" asp-action="Delete" method="post">
-                        <input type="hidden" name="Id" value="@courseViewModel?.QuizId" />
+                    <form asp-controller="Course" asp-action="Delete" method="post">
+                        <input type="hidden" name="Id" value="@courseViewModel?.CourseId" />
                         <button type="submit" class="btn btn-danger text-white">Delete</button>
                     </form>
 
-                    <form asp-controller="Quiz" asp-action="Statistics" method="get">
-                        <input type="hidden" name="Id" value="@courseViewModel?.QuizId" />
+                    <form asp-controller="Course" asp-action="Statistics" method="get">
+                        <input type="hidden" name="Id" value="@courseViewModel?.CourseId" />
                         <button type="submit" class="btn btn-info text-white">Statistics</button>
                     </form>
                 }
-            </div> *@
+            </div>
         </div>
     }
 </div>

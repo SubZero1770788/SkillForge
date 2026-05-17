@@ -15,6 +15,7 @@ namespace quiz_project.Infrastructure.Repositories
         {
             return await context.OnGoingQuizStates
                 .Include(ogqs => ogqs.Answers)
+                .Include(x => x.Questions)
                 .FirstOrDefaultAsync(s => s.UserId == userId && s.QuizId == quizId);
         }
 
@@ -22,6 +23,7 @@ namespace quiz_project.Infrastructure.Repositories
         {
             var existing = await context.OnGoingQuizStates
                 .Include(x => x.Answers)
+                .Include(x => x.Questions)
                 .FirstOrDefaultAsync(x => x.UserId == onGoingQuizState.UserId && x.QuizId == onGoingQuizState.QuizId);
 
             if (existing != null)
