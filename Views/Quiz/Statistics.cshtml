@@ -40,12 +40,14 @@
             <ul>
                 @foreach (var answer in question.Answers)
                 {
-                    var percentage = answer.SelectedByCount > 0
-                    ? Math.Round((double)answer.SelectedByCount / Model.UsersFinished * 100, 2)
-                    : 0;
-                    <li>@answer.Description |
-                        Chosen by @answer.SelectedByCount users |
-                        Percentage: @percentage%</li>
+                    var percentage = question.TotalAttempts > 0
+                        ? Math.Round((double)answer.SelectedByCount / question.TotalAttempts * 100, 2)
+                        : 0;
+                    <li>
+                        @answer.Description |
+                        Chosen @answer.SelectedByCount times |
+                        Percentage: @percentage%
+                    </li>
                 }
             </ul>
         </div>

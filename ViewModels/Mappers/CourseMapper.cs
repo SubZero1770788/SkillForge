@@ -43,29 +43,27 @@ namespace quiz_project.ViewModels.Mappers
 
         public Course ToEntity(CourseViewModel courseViewModel, int userId)
         {
-            var course = new Course
+            return new Course
             {
                 CourseId = courseViewModel.CourseId,
                 Title = courseViewModel.Title,
                 Description = courseViewModel.Description,
                 UserId = userId,
                 IsPublic = courseViewModel.IsPublic,
+                IsSequential = courseViewModel.IsSequential
             };
-
-            return course;
         }
 
         public CourseViewModel ToCourseViewModel(Course course)
         {
-            var courseViewModel = new CourseViewModel
+            return new CourseViewModel
             {
-                IsPublic = course.IsPublic,
                 CourseId = course.CourseId,
                 Title = course.Title,
-                Description = course.Description
+                Description = course.Description,
+                IsPublic = course.IsPublic,
+                IsSequential = course.IsSequential
             };
-
-            return courseViewModel;
         }
 
         // public QuizStatisticsModel ToQuizStatisticsModel(Quiz quiz, double averageScores, IEnumerable<QuizAttempt> allQuizAttempts,

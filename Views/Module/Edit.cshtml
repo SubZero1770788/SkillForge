@@ -1,0 +1,124 @@
+@model quiz_project.ViewModels.ModuleViewModel
+
+<div class="form-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Edit Module</h1>
+        <a asp-controller="Course" asp-action="Edit" asp-route-courseId="@Model.CourseId"
+           class="btn btn-secondary">Back to course</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-5">
+            <form method="post">
+                <input type="hidden" asp-for="ModuleId" />
+                <input type="hidden" asp-for="CourseId" />
+
+                <div class="form-group mb-3">
+                    <label asp-for="Title"></label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Description"></label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="QuizId">Module quiz (optional)</label>
+                    <select asp-for="QuizId" class="form-select">
+                        <option value="">— none —</option>
+                        @if (ViewBag.AvailableQuizzes != null)
+                        {
+                            @foreach (var quiz in ViewBag.AvailableQuizzes)
+                            {
+                                var scopeLabel = quiz.Scope.ToString() == "Standalone" ? "" : $" [{quiz.Scope}]";
+                                <option value="@quiz.QuizId" selected="@(Model.QuizId == quiz.QuizId)">
+                                    @quiz.Title@scopeLabel
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div asp-validation-summary="All" class="text-danger mb-2"></div>
+                <button type="submit" class="btn btn-primary">Save changes</button>
+            </form>
+        </div>
+
+        <div class="col-md-7">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Chapters</h4>
+                <a asp-controller="Chapter" asp-action="Create" asp-route-moduleId="@Model.ModuleId"
+                   class="btn btn-success btn-sm">+ Add chapter</a>
+            </div>
+
+            @if (!Model.Chapters.Any())
+            {
+                <div class="alert alert-info">This module has no chapters yet.</div>
+            }
+            else
+            {
+                <div id="chapter-list">
+                    @foreach (var chapter in Model.Chapters.OrderBy(c => c.Order))
+                    {
+                        <div class="card mb-2 chapter-item" data-id="@chapter.ChapterId" style="cursor: grab">
+                            <div class="card-body d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="drag-handle text-muted me-2">⠿</span>
+                                    <strong>@chapter.Title</strong>
+                                    @if (chapter.QuizId.HasValue)
+                                    {
+                                        <span class="badge bg-info ms-2">Quiz</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(chapter.FilePath))
+                                    {
+                                        <span class="badge bg-secondary ms-1">File</span>
+                                    }
+                                </div>
+                                <div>
+                                    <a asp-controller="Chapter" asp-action="Edit" asp-route-chapterId="@chapter.ChapterId"
+                                       class="btn btn-outline-primary btn-sm me-1">Edit</a>
+                                    <form asp-controller="Chapter" asp-action="Delete" method="post" class="d-inline">
+                                        <input type="hidden" name="chapterId" value="@chapter.ChapterId" />
+                                        <input type="hidden" name="moduleId" value="@Model.ModuleId" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                onclick="return confirm('Delete this chapter?')">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <form id="reorder-form" asp-controller="Chapter" asp-action="Reorder" method="post">
+                    <input type="hidden" name="moduleId" value="@Model.ModuleId" />
+                    <div id="reorder-inputs"></div>
+                    <button type="submit" class="btn btn-outline-secondary btn-sm mt-2">Save order</button>
+                </form>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script>
+        const list = document.getElementById('chapter-list');
+        if (list) {
+            Sortable.create(list, { animation: 150, handle: '.drag-handle' });
+
+            document.getElementById('reorder-form').addEventListener('submit', function () {
+                const inputs = document.getElementById('reorder-inputs');
+                inputs.innerHTML = '';
+                [...list.querySelectorAll('.chapter-item')].forEach((el, i) => {
+                    inputs.innerHTML +=
+                        `<input type="hidden" name="items[${i}].Id" value="${el.dataset.id}">` +
+                        `<input type="hidden" name="items[${i}].Order" value="${i}">`;
+                });
+            });
+        }
+    </script>
+}

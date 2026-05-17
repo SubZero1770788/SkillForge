@@ -12,7 +12,7 @@ namespace quiz_project.Interfaces
     {
         public Task<bool> UserOwnsQuizAsync(int id, User user);
         public Task<bool> UserOwnsCourseAsync(int id, User user);
+        public Task<bool> UserOwnsModuleAsync(int moduleId, User user);
         public List<string> EachQuestionHasAnswer(QuizViewModel quizViewModel);
-
     }
 }

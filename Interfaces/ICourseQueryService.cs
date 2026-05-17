@@ -10,7 +10,7 @@ namespace quiz_project.Interfaces
     {
         Task<List<CourseViewModel>> GetUserCoursesAsync(int userId);
         Task<List<CourseViewModel>> GetUserSignedUpCoursesAsync(int userId);
-        //Task<(bool, QuizStatisticsModel?)> GetQuizStatisticsAsync(int quizId, int userId);
+        Task<List<CourseViewModel>> GetPublicCoursesAsync();
         Task<bool> CheckIfPublicAsync(int Id);
     }
 }

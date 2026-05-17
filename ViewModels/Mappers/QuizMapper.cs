@@ -61,12 +61,13 @@ namespace quiz_project.ViewModels.Mappers
                     {
                         UserName = users[a.UserId] ?? "User not found",
                         PlayerScore = a.Score
-                    }).OrderBy(a => a.PlayerScore).ToList(),
+                    }).OrderByDescending(a => a.PlayerScore).ToList(),
 
                     Questions = quiz.Questions.Select(q => new QuizSummaryViewModel.QuestionStats
                     {
                         QuestionId = q.QuestionId,
                         Description = q.Description,
+                        TotalAttempts = allQuizAttempts.Count(),
                         Answers = q.Answers.Select(a => new QuizSummaryViewModel.AnswerStats
                         {
                             AnswerId = a.AnswerId,
@@ -81,17 +82,18 @@ namespace quiz_project.ViewModels.Mappers
         }
 
         public QuizSummaryViewModel ToQuizSummaryViewModel(Quiz quiz, List<QuizAttempt> topScores,
-                                Dictionary<int, string> users, QuizAttempt playerScore)
+                                Dictionary<int, string> users, QuizAttempt playerScore, QuizAttempt topPlayerScore)
         {
             QuizSummaryViewModel quizSummaryViewModel = new()
             {
                 Score = playerScore.Score,
                 TotalScore = quiz.TotalScore,
+                BestScore = topPlayerScore.Score,
                 TopPlayerScores = topScores.Select(a => new TopScore
                 {
                     UserName = users[a.UserId] ?? "User not found",
                     PlayerScore = a.Score
-                }).OrderBy(a => a.PlayerScore).ToList()
+                }).OrderByDescending(a => a.PlayerScore).ToList()
             };
 
             return quizSummaryViewModel;

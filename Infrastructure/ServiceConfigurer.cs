@@ -67,7 +67,9 @@ namespace quiz_project.Infrastructure
 
             builder.Services.AddScoped<IQuizRepository, QuizRepository>();
             builder.Services.AddScoped<ICourseRepository, CourseRepository>();
-            builder.Services.AddScoped<IAttemptRepository, AttemptRepository>();
+            builder.Services.AddScoped<IModuleRepository, ModuleRepository>();
+            builder.Services.AddScoped<IChapterRepository, ChapterRepository>();
+            builder.Services.AddScoped<IProgressRepository, ProgressRepository>();
             builder.Services.AddScoped<IAttemptRepository, AttemptRepository>();
             builder.Services.AddScoped<IOnGoingQuizRepository, OnGoingQuizRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -77,6 +79,8 @@ namespace quiz_project.Infrastructure
             builder.Services.AddScoped<IQuizGameService, QuizGameService>();
             builder.Services.AddScoped<IQuizQueryService, QuizQueryService>();
             builder.Services.AddScoped<ICourseQueryService, CourseQueryService>();
+            builder.Services.AddScoped<IModuleService, ModuleService>();
+            builder.Services.AddScoped<IChapterService, ChapterService>();
             builder.Services.AddScoped<IQuizService, QuizService>();
             builder.Services.AddScoped<ICourseService, CourseService>();
             builder.Services.AddScoped<IUserService, UserService>();
@@ -84,6 +88,8 @@ namespace quiz_project.Infrastructure
             builder.Services.AddSingleton<IUserMapper, UserMapper>();
             builder.Services.AddSingleton<IQuizMapper, QuizMapper>();
             builder.Services.AddSingleton<ICourseMapper, CourseMapper>();
+            builder.Services.AddSingleton<IModuleMapper, ModuleMapper>();
+            builder.Services.AddSingleton<IChapterMapper, ChapterMapper>();
 
             return builder;
         }

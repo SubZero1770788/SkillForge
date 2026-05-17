@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -22,9 +18,8 @@ namespace quiz_project.Database
 
             var con = config.GetConnectionString("DefaultConnection");
             ob.UseSqlite(con);
-
-
         }
+
         protected override void OnModelCreating(ModelBuilder mb)
         {
             mb.Entity<Course>(en =>
@@ -45,33 +40,47 @@ namespace quiz_project.Database
                     .WithOne(c => c.Module)
                     .HasForeignKey(c => c.ModuleId)
                     .OnDelete(DeleteBehavior.Cascade);
-
-                en.HasMany(m => m.Chapters)
-                    .WithOne(c => c.Module)
-                    .HasForeignKey(c => c.ModuleId)
-                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             mb.Entity<Chapter>(en =>
             {
-                en.HasKey(cha => cha.ChapterId);
+                en.HasKey(c => c.ChapterId);
 
-                en.HasOne(cha => cha.Module)
-                    .WithMany(m => m.Chapters)
-                    .HasForeignKey(cha => cha.ModuleId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                // en.HasOne(cha => cha.Course)
-                //     .WithMany(c => c.Modules.SelectMany(m => m.Chapters))
-                //     .HasForeignKey(cha => cha.CourseId)
-                //     .OnDelete(DeleteBehavior.Cascade);
-
-                // en.HasOne(cha => cha.Quiz)
-                //     .WithOne(q => q.Chapter)
-                //     .HasForeignKey<Chapter>(cha => cha.QuizId)
-                //     .OnDelete(DeleteBehavior.SetNull);
+                en.HasOne(c => c.Quiz)
+                    .WithMany()
+                    .HasForeignKey(c => c.QuizId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
+            mb.Entity<UserModuleProgress>(en =>
+            {
+                en.HasKey(p => p.Id);
+
+                en.HasOne(p => p.User)
+                    .WithMany()
+                    .HasForeignKey(p => p.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                en.HasOne(p => p.Module)
+                    .WithMany()
+                    .HasForeignKey(p => p.ModuleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            mb.Entity<UserPartProgress>(en =>
+            {
+                en.HasKey(p => p.Id);
+
+                en.HasOne(p => p.User)
+                    .WithMany()
+                    .HasForeignKey(p => p.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                en.HasOne(p => p.Chapter)
+                    .WithMany()
+                    .HasForeignKey(p => p.ChapterId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
 
             mb.Entity<Quiz>(en =>
             {
@@ -158,6 +167,11 @@ namespace quiz_project.Database
                 ogqs.HasMany(ogqs => ogqs.Answers)
                     .WithOne(anss => anss.OnGoingQuizState)
                     .HasForeignKey(anss => anss.OnGoingQuizStateId);
+
+                ogqs.HasMany(ogqs => ogqs.Questions)
+                    .WithOne(q => q.OnGoingQuizState)
+                    .HasForeignKey(q => q.OnGoingQuizStateId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             mb.Entity<AnswerState>(anss =>
@@ -189,6 +203,8 @@ namespace quiz_project.Database
         public DbSet<Course> Courses { get; set; }
         public DbSet<Module> Modules { get; set; }
         public DbSet<Chapter> Chapters { get; set; }
+        public DbSet<UserModuleProgress> UserModuleProgresses { get; set; }
+        public DbSet<UserPartProgress> UserPartProgresses { get; set; }
         public DbSet<Quiz> Quizzes { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }
@@ -197,5 +213,4 @@ namespace quiz_project.Database
         public DbSet<OnGoingQuizState> OnGoingQuizStates { get; set; }
         public DbSet<AnswerState> AnswerStates { get; set; }
     }
-
 }

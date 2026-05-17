@@ -10,6 +10,7 @@ namespace quiz_project.ViewModels
     {
         public int Score { get; set; }
         public int TotalScore { get; set; }
+        public int BestScore { get; set; }
         [Range(0, 10)]
         public List<TopScore> TopPlayerScores { get; set; }
         public List<QuestionStats> Questions { get; set; }
@@ -23,6 +24,7 @@ namespace quiz_project.ViewModels
         {
             public int QuestionId { get; set; }
             public string Description { get; set; }
+            public int TotalAttempts { get; set; }
             public List<AnswerStats> Answers { get; set; }
         }
 

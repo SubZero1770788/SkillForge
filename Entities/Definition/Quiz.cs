@@ -13,8 +13,7 @@ namespace quiz_project.Entities
         public int TotalScore { get; set; }
         public bool IsPublic { get; set; }
         public bool IsRandomized { get; set; }
-        // public Chapter Chapter { get; set; }
-        // public required int ChapterId { get; set; }
+        public QuizScope Scope { get; set; } = QuizScope.Standalone;
         public List<Question> Questions { get; set; } = new();
         public User User { get; set; }
         public required int UserId { get; set; }

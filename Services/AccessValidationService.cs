@@ -15,7 +15,8 @@ using quiz_project.ViewModels;
 
 namespace quiz_project.Services
 {
-    public class AccessValidationService(IQuizRepository quizRepository, ICourseRepository courseRepository) : IAccessValidationService
+    public class AccessValidationService(IQuizRepository quizRepository, ICourseRepository courseRepository,
+        IModuleRepository moduleRepository) : IAccessValidationService
     {
         public List<string> EachQuestionHasAnswer(QuizViewModel quizViewModel)
         {
@@ -40,6 +41,12 @@ namespace quiz_project.Services
             return course != null && course.UserId == user.Id;
         }
 
-
+        public async Task<bool> UserOwnsModuleAsync(int moduleId, User user)
+        {
+            var module = await moduleRepository.GetModuleByIdAsync(moduleId);
+            if (module is null) return false;
+            var course = await courseRepository.GetCourseByIdAsync(module.CourseId);
+            return course != null && course.UserId == user.Id;
+        }
     }
 }

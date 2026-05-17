@@ -205,5 +205,12 @@ namespace quiz_project.Entities.Repositories
             await context.SaveChangesAsync();
         }
 
+        public async Task UpdateQuizScopeAsync(int quizId, QuizScope scope)
+        {
+            var quiz = await context.Quizzes.FirstOrDefaultAsync(q => q.QuizId == quizId);
+            if (quiz is null) return;
+            quiz.Scope = scope;
+            await context.SaveChangesAsync();
+        }
     }
 }

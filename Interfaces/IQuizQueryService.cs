@@ -9,6 +9,7 @@ namespace quiz_project.Interfaces
     public interface IQuizQueryService
     {
         Task<List<QuizViewModel>> GetUserQuizzesAsync(int userId);
+        Task<List<QuizViewModel>> GetPublicQuizzesAsync();
         Task<(bool, QuizStatisticsModel?)> GetQuizStatisticsAsync(int quizId, int userId);
         Task<bool> CheckIfPublicAsync(int Id);
         Task<bool> CheckIfRandomizedAsync(int Id);

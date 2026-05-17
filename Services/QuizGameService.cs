@@ -37,12 +37,13 @@ namespace quiz_project.Services
             var allQuizAttempts = await attemptRepository.GetAllAttemptsAsync(quizId);
             var quizDefinition = await quizRepository.GetQuizByIdAsync(quizId);
 
-            var playerScore = await attemptRepository.GetLatestUserAttemptAsync(user.Id);
+            var latestplayerScore = await attemptRepository.GetLatestUserAttemptAsync(user.Id);
+            var bestPlayerScore = await attemptRepository.GetTopUserAttemptAsync(user.Id, quizId);
 
-            var topScores = allQuizAttempts.OrderBy(aqa => aqa.Score).Take(10).ToList();
+            var topScores = allQuizAttempts.OrderByDescending(aqa => aqa.Score).Take(10).ToList();
             var users = await userManager.Users.ToDictionaryAsync(u => u.Id, u => u.UserName);
 
-            var quizSummaryViewModel = quizMapper.ToQuizSummaryViewModel(quizDefinition, topScores, users, playerScore);
+            var quizSummaryViewModel = quizMapper.ToQuizSummaryViewModel(quizDefinition, topScores, users, latestplayerScore, bestPlayerScore);
 
             return (true, quizSummaryViewModel);
         }

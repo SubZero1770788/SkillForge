@@ -18,5 +18,6 @@ namespace quiz_project.Interfaces
         Task CreateQuizAsync(Quiz quiz);
         Task<List<Question>> GetQuestionsByQuizId(int quizId);
         Task<Dictionary<(int QuestionId, int AnswerId), int>> GetAnswerSelectionStatsAsync(int quizId);
+        Task UpdateQuizScopeAsync(int quizId, QuizScope scope);
     }
 }

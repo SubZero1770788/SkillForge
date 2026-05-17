@@ -1,140 +1,120 @@
-@model quiz_project.ViewModels.CourseViewModel;
-
-@section Scripts {
-    <script src="~/js/quizEditor.js"></script>
-
-    <script>
-        @* 
-        //TO TRZEBA ZROBIĆ DLA MODUŁÓW I ROZDZIAŁÓW
-        
-        let questionCounter = @Model.Questions.Count();
-
-        function updateCounter() {
-            questionCounter++;
-        }
-
-        function hideMessage() {
-            var message = document.querySelector(".alert-info");
-            if (message) {
-                document.querySelector(".alert-info").style.display = "none";
-            }
-        } *@
-    </script>
-}
+@model quiz_project.ViewModels.CourseViewModel
 
 <div class="form-wrapper">
-    <div class="d-flex justify-content-between align-items-center">
-        <h1>Edit This Course</h1>
-
-
-        <form asp-controller="Course" asp-action="Index" method="get" class="col">
-            <button type="submit" class="btn btn-danger text-white">Cancel</button>
-        </form>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Edit Course</h1>
+        <a asp-action="Index" class="btn btn-secondary">Back to courses</a>
     </div>
 
-    <form method="post">
-        <div class="row">
-
-            <div class="col-md-6">
-                <div class="form-group">
+    <div class="row">
+        <div class="col-md-5">
+            <form method="post">
+                <div class="form-group mb-3">
                     <label asp-for="Title"></label>
                     <input asp-for="Title" class="form-control" />
                     <span asp-validation-for="Title" class="text-danger"></span>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label asp-for="Description"></label>
-                    <input asp-for="Description" class="form-control" />
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
                     <span asp-validation-for="Description" class="text-danger"></span>
                 </div>
 
-                <div class="form-group">
-                    <label asp-for="IsPublic">Make course public?</label>
-
+                <div class="form-group mb-3">
+                    <label>Make course public?</label>
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" asp-for="IsPublic" value="true" />
-                        <label class="form-check-label">Yes</label>
+                        <input class="form-check-input" type="radio" asp-for="IsPublic" value="true" id="public-yes" />
+                        <label class="form-check-label" for="public-yes">Yes</label>
                     </div>
-
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" asp-for="IsPublic" value="false" />
-                        <label class="form-check-label">No</label>
+                        <input class="form-check-input" type="radio" asp-for="IsPublic" value="false" id="public-no" />
+                        <label class="form-check-label" for="public-no">No</label>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary mt-2">Update</button>
+                <div class="form-group mb-3">
+                    <label>Require sequential completion?</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" asp-for="IsSequential" value="true" id="seq-yes" />
+                        <label class="form-check-label" for="seq-yes">Yes</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" asp-for="IsSequential" value="false" id="seq-no" />
+                        <label class="form-check-label" for="seq-no">No</label>
+                    </div>
+                </div>
+
+                <div asp-validation-summary="All" class="text-danger mb-2"></div>
+                <button type="submit" class="btn btn-primary">Save changes</button>
+            </form>
+        </div>
+
+        <div class="col-md-7">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Modules</h4>
+                <a asp-controller="Module" asp-action="Create" asp-route-courseId="@Model.CourseId"
+                   class="btn btn-success btn-sm">+ Add module</a>
             </div>
 
-            @*
-            // TO TAK SAMO OGARNĄĆ DLA MODUŁÓW I ROZDZIAŁÓW
-             <div class="col-md-6 d-flex flex-column align-items-end">
-                @if (!Model.Modules.Any())
-                {
-                    <div class="alert alert-info">
-                        This course has no modules yet.
-                    </div>
-                }
-
-                <div id="questions-container">
-                    @for (int i = 0; i < Model.Questions.Count; i++)
+            @if (!Model.Modules.Any())
+            {
+                <div class="alert alert-info">This course has no modules yet.</div>
+            }
+            else
+            {
+                <div id="module-list">
+                    @foreach (var module in Model.Modules.OrderBy(m => m.Order))
                     {
-                        var question = Model.Questions[i];
-                        var qIndex = question.Index ?? i;
-
-                        <input type="hidden" name="Questions[@i].QuestionId" value="@Model.Questions[i].QuestionId" />
-                        <input type="hidden" name="Questions[@qIndex].Index" value="@qIndex" />
-                        <div type="hidden" class="border p-3 mb-3 bg-light question-box" id="question-@qIndex"
-                            data-question-index="@qIndex">
-                            <button type="button" class="btn btn-danger mb-2"
-                                onclick="removeQuestion(@qIndex)">Remove</button>
-                            <h5>Question @(i + 1)</h5>
-
-                            <div class="form-group">
-                                <label>Description</label>
-                                <input name="Questions[@i].Description" asp-for="@question.Description"
-                                    class="form-control" />
-                                <span asp-validation-for="@question.Description" class="text-danger"></span>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Score</label>
-                                <input name="Questions[@i].QuestionScore" asp-for="@question.QuestionScore"
-                                    class="form-control" />
-                                <span asp-validation-for="@question.QuestionScore" class="text-danger"></span>
-                            </div>
-
-                            <div class="form-group">
-                                <label>How many answers?</label>
-                                <input type="number" min="1" max="10" class="form-control" placeholder="e.g. 4"
-                                    onchange="addAnswers(this, ${questionCounter})" />
-                            </div>
-
-                            @for (int j = 0; j < question.Answers.Count; j++)
-                            {
-                                var answer = question.Answers[j];
-                                <div class="form-group">
-                                    <input type="hidden" name="Questions[@i].Answers[@j].AnswerId" value="@answer.AnswerId" />
-                                    <label>Answer @(j + 1)</label>
-                                    <input name="Questions[@i].Answers[@j].Description" asp-for="@answer.Description"
-                                        class="form-control mb-1" />
-                                    <span asp-validation-for="@answer.Description" class="text-danger"></span>
-                                    <div class="form-check">
-                                        <label class="form-check-label">Correct</label>
-                                        <input name="Questions[@i].Answers[@j].IsCorrect" asp-for="@answer.IsCorrect"
-                                            class="form-check-input" />
-                                        <span asp-validation-for="@answer.IsCorrect" class="text-danger"></span>
-                                    </div>
+                        <div class="card mb-2 module-item" data-id="@module.ModuleId" style="cursor: grab">
+                            <div class="card-body d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="drag-handle text-muted me-2">⠿</span>
+                                    <strong>@module.Title</strong>
+                                    <small class="text-muted ms-2">@module.Chapters.Count chapter(s)</small>
                                 </div>
-                            }
+                                <div>
+                                    <a asp-controller="Module" asp-action="Edit" asp-route-moduleId="@module.ModuleId"
+                                       class="btn btn-outline-primary btn-sm me-1">Edit</a>
+                                    <form asp-controller="Module" asp-action="Delete" method="post" class="d-inline">
+                                        <input type="hidden" name="moduleId" value="@module.ModuleId" />
+                                        <input type="hidden" name="courseId" value="@Model.CourseId" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                onclick="return confirm('Delete this module?')">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     }
                 </div>
-                <button type="button" class="btn btn-secondary" onclick="addQuestion(), hideMessage()">
-                    Add Question
-                </button>
-            </div> *@
 
-            <div asp-validation-summary="All" class="text-danger mt-2"></div>
+                <form id="reorder-form" asp-controller="Module" asp-action="Reorder" method="post">
+                    <input type="hidden" name="courseId" value="@Model.CourseId" />
+                    <div id="reorder-inputs"></div>
+                    <button type="submit" class="btn btn-outline-secondary btn-sm mt-2">Save order</button>
+                </form>
+            }
         </div>
-    </form>
+    </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script>
+        const list = document.getElementById('module-list');
+        if (list) {
+            Sortable.create(list, { animation: 150, handle: '.drag-handle' });
+
+            document.getElementById('reorder-form').addEventListener('submit', function () {
+                const inputs = document.getElementById('reorder-inputs');
+                inputs.innerHTML = '';
+                [...list.querySelectorAll('.module-item')].forEach((el, i) => {
+                    inputs.innerHTML +=
+                        `<input type="hidden" name="items[${i}].Id" value="${el.dataset.id}">` +
+                        `<input type="hidden" name="items[${i}].Order" value="${i}">`;
+                });
+            });
+        }
+    </script>
+}

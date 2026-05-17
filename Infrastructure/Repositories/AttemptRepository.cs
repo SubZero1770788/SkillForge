@@ -30,7 +30,7 @@ namespace quiz_project.Database.Repositories
 
         public async Task<QuizAttempt> GetTopUserAttemptAsync(int userId, int quizId)
         {
-            var attempt = await context.QuizAttempts.Where(qa => qa.UserId == userId).OrderBy(qa => qa.Score).FirstAsync();
+            var attempt = await context.QuizAttempts.Where(qa => qa.UserId == userId).OrderByDescending(qa => qa.Score).FirstAsync();
             return attempt;
         }
     }

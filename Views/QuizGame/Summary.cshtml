@@ -3,9 +3,13 @@
 <h3>Congratulations on finishing the quiz</h3>
 
 <div class="container">
-    <div class="row">Here's your score:</div>
+    <div class="row">Here's your latest score:</div>
     <div>
         @Model.Score / @Model.TotalScore
+    </div>
+    <div class="row">And here's your best score:</div>
+    <div>
+        @Model.BestScore / @Model.TotalScore
     </div>
 </div>
 

@@ -15,6 +15,6 @@ namespace quiz_project.Interfaces
                             QuizAttempt topUserAttempt, List<QuizAttempt> topScores,
                             Dictionary<int, string> users, Dictionary<(int QuestionId, int AnswerId), int>? answerCounts);
         public QuizSummaryViewModel ToQuizSummaryViewModel(Quiz quiz, List<QuizAttempt> topScores,
-                            Dictionary<int, string> users, QuizAttempt playerScore);
+                            Dictionary<int, string> users, QuizAttempt playerScore, QuizAttempt topPlayerScore);
     }
 }

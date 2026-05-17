@@ -207,14 +207,19 @@ namespace quiz_project.Entities.Repositories
         //     await context.SaveChangesAsync();
         // }
 
-        public Task UpdateCourseAsync(Course course)
+        public async Task UpdateCourseAsync(Course course)
         {
-            throw new NotImplementedException();
+            var existing = await context.Courses.FirstAsync(c => c.CourseId == course.CourseId);
+            context.Entry(existing).CurrentValues.SetValues(course);
+            await context.SaveChangesAsync();
         }
 
-        public Task<List<Module>> GetModulesByCourseId(int courseId)
+        public async Task<List<Module>> GetModulesByCourseId(int courseId)
         {
-            throw new NotImplementedException();
+            return await context.Modules
+                .Where(m => m.CourseId == courseId)
+                .OrderBy(m => m.Order)
+                .ToListAsync();
         }
     }
 }

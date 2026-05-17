@@ -1,65 +1,53 @@
-@model quiz_project.ViewModels.CourseViewModel;
-
-@section Scripts {
-    <script src="~/js/quizEditor.js"></script>
-
-    <script>
-        let questionCounter = 0;
-
-        function updateCounter() {
-        questionCounter++;
-        }
-
-    </script>
-}
+@model quiz_project.ViewModels.CourseViewModel
 
 <div class="form-wrapper">
-    <div id="quiz-mode" data-mode="create"></div>
     <h1 class="form-section-title">Create New Course</h1>
 
     <form method="post">
-        <div class="row">
-
-            <div class="col-md-6">
-                <div class="form-group mb-3">
-                    <label asp-for="Title"></label>
-                    <input asp-for="Title" class="form-control" />
-                    <span asp-validation-for="Title" class="text-danger"></span>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label asp-for="Description"></label>
-                    <input asp-for="Description" class="form-control" />
-                    <span asp-validation-for="Description" class="text-danger"></span>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label asp-for="IsPublic">Make course public?</label>
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" asp-for="IsPublic" value="true" />
-                        <label class="form-check-label">Yes</label>
-                    </div>
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" asp-for="IsPublic" value="false" />
-                        <label class="form-check-label">No</label>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary mt-2">Create</button>
-                <div asp-validation-summary="All" class="text-danger mt-2"></div>
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label asp-for="Title"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
             </div>
 
-            <div class="col-md-6 d-flex flex-column align-items-end">
-                <div class="form-group">
-                    <button type="button" class="btn btn-secondary" onclick="addModule()">
-                        Add Module
-                    </button>
-                </div>
-
-                <div id="modules-container"></div>
+            <div class="form-group mb-3">
+                <label asp-for="Description"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
             </div>
+
+            <div class="form-group mb-3">
+                <label>Make course public?</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" asp-for="IsPublic" value="true" id="public-yes" />
+                    <label class="form-check-label" for="public-yes">Yes</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" asp-for="IsPublic" value="false" id="public-no" />
+                    <label class="form-check-label" for="public-no">No</label>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label>Require sequential completion?</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" asp-for="IsSequential" value="true" id="seq-yes" />
+                    <label class="form-check-label" for="seq-yes">Yes — chapters must be completed in order</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" asp-for="IsSequential" value="false" id="seq-no" />
+                    <label class="form-check-label" for="seq-no">No — any chapter can be accessed freely</label>
+                </div>
+            </div>
+
+            <div asp-validation-summary="All" class="text-danger mb-2"></div>
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
         </div>
     </form>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

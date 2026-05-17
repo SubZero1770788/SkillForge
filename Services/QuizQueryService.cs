@@ -39,7 +39,7 @@ namespace quiz_project.Services
             var quiz = await quizRepository.GetQuizByIdAsync(quizId);
             var averageScores = allQuizAttempts.Average(aqa => aqa.Score);
             var topUserAttempt = await attemptRepository.GetTopUserAttemptAsync(userId, quiz.QuizId);
-            var topScores = allQuizAttempts.OrderBy(aqa => aqa.Score).Take(10).ToList();
+            var topScores = allQuizAttempts.OrderByDescending(aqa => aqa.Score).Take(10).ToList();
             var users = await userManager.Users.ToDictionaryAsync(u => u.Id, u => u.UserName);
             var answerCounts = await quizRepository.GetAnswerSelectionStatsAsync(quizId);
 
@@ -52,15 +52,13 @@ namespace quiz_project.Services
         public async Task<List<QuizViewModel>> GetUserQuizzesAsync(int userId)
         {
             var quizes = await quizRepository.GetQuizesByUserAsync(userId);
+            return quizes.Select(q => quizMapper.ToQuizViewModel(q)).ToList();
+        }
 
-            var quizViewModels = new List<QuizViewModel>();
-            foreach (Quiz q in quizes)
-            {
-                var quizViewModel = quizMapper.ToQuizViewModel(q);
-                quizViewModels.Add(quizViewModel);
-            }
-
-            return quizViewModels;
+        public async Task<List<QuizViewModel>> GetPublicQuizzesAsync()
+        {
+            var quizes = await quizRepository.GetPublicQuizzes();
+            return quizes.Select(q => quizMapper.ToQuizViewModel(q)).ToList();
         }
     }
 }

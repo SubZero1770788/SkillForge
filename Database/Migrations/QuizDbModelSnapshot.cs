@@ -174,17 +174,16 @@ namespace quiz_project.Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("CourseId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
+                    b.Property<string>("Content")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsPublic")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("FilePath")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("ModuleId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Order")
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("QuizId")
@@ -195,8 +194,6 @@ namespace quiz_project.Database.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("ChapterId");
-
-                    b.HasIndex("CourseId");
 
                     b.HasIndex("ModuleId");
 
@@ -216,6 +213,9 @@ namespace quiz_project.Database.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsPublic")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsSequential")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Title")
@@ -308,8 +308,14 @@ namespace quiz_project.Database.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsPublic")
+                    b.Property<int>("Order")
                         .HasColumnType("INTEGER");
+
+                    b.Property<int?>("QuizId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RoadmapFilePath")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -381,6 +387,9 @@ namespace quiz_project.Database.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsRandomized")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Scope")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Title")
@@ -536,6 +545,60 @@ namespace quiz_project.Database.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("quiz_project.Entities.UserModuleProgress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ModuleId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ModuleId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserModuleProgresses");
+                });
+
+            modelBuilder.Entity("quiz_project.Entities.UserPartProgress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ChapterId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChapterId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserPartProgresses");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.HasOne("quiz_project.Entities.Role", null)
@@ -627,12 +690,6 @@ namespace quiz_project.Database.Migrations
 
             modelBuilder.Entity("quiz_project.Entities.Chapter", b =>
                 {
-                    b.HasOne("quiz_project.Entities.Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("quiz_project.Entities.Module", "Module")
                         .WithMany("Chapters")
                         .HasForeignKey("ModuleId")
@@ -641,9 +698,8 @@ namespace quiz_project.Database.Migrations
 
                     b.HasOne("quiz_project.Entities.Quiz", "Quiz")
                         .WithMany()
-                        .HasForeignKey("QuizId");
-
-                    b.Navigation("Course");
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Module");
 
@@ -762,6 +818,44 @@ namespace quiz_project.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("Quiz");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("quiz_project.Entities.UserModuleProgress", b =>
+                {
+                    b.HasOne("quiz_project.Entities.Module", "Module")
+                        .WithMany()
+                        .HasForeignKey("ModuleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("quiz_project.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Module");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("quiz_project.Entities.UserPartProgress", b =>
+                {
+                    b.HasOne("quiz_project.Entities.Chapter", "Chapter")
+                        .WithMany()
+                        .HasForeignKey("ChapterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("quiz_project.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Chapter");
 
                     b.Navigation("User");
                 });
