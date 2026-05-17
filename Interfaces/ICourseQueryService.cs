@@ -12,5 +12,6 @@ namespace quiz_project.Interfaces
         Task<List<CourseViewModel>> GetUserSignedUpCoursesAsync(int userId);
         Task<List<CourseViewModel>> GetPublicCoursesAsync();
         Task<bool> CheckIfPublicAsync(int Id);
+        Task<CourseStatisticsViewModel?> GetCourseStatisticsAsync(int courseId);
     }
 }

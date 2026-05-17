@@ -50,7 +50,8 @@ namespace quiz_project.ViewModels.Mappers
                 Description = courseViewModel.Description,
                 UserId = userId,
                 IsPublic = courseViewModel.IsPublic,
-                IsSequential = courseViewModel.IsSequential
+                IsSequential = courseViewModel.IsSequential,
+                IsPaid = courseViewModel.IsPaid
             };
         }
 
@@ -62,7 +63,8 @@ namespace quiz_project.ViewModels.Mappers
                 Title = course.Title,
                 Description = course.Description,
                 IsPublic = course.IsPublic,
-                IsSequential = course.IsSequential
+                IsSequential = course.IsSequential,
+                IsPaid = course.IsPaid
             };
         }
 

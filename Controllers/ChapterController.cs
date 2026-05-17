@@ -7,13 +7,16 @@ using quiz_project.ViewModels;
 namespace quiz_project.Controllers
 {
     public class ChapterController(IChapterService chapterService, IAccessValidationService accessValidationService,
-        IQuizRepository quizRepository, UserManager<User> userManager) : Controller
+        IQuizRepository quizRepository, IEnrollmentService enrollmentService,
+        IModuleRepository moduleRepository, IChapterRepository chapterRepository,
+        IFileStorageService fileStorageService, UserManager<User> userManager) : Controller
     {
         private async Task LoadAvailableQuizzes(int userId)
         {
             var quizzes = await quizRepository.GetQuizesByUserAsync(userId);
             ViewBag.AvailableQuizzes = quizzes
-                .Select(q => new { q.QuizId, q.Title, q.Scope })
+                .Where(q => q.Scope == QuizScope.Chapter)
+                .Select(q => new { q.QuizId, q.Title })
                 .ToList();
         }
 
@@ -22,6 +25,21 @@ namespace quiz_project.Controllers
         {
             var user = await userManager.GetUserAsync(User);
             if (user is null) return RedirectToAction("Register", "User");
+
+            if (!User.IsInRole("Admin") && !User.IsInRole("Creator"))
+            {
+                var chapter = await chapterRepository.GetChapterByIdAsync(chapterId);
+                if (chapter is not null)
+                {
+                    var module = await moduleRepository.GetModuleByIdAsync(chapter.ModuleId);
+                    if (module is not null)
+                    {
+                        var status = await enrollmentService.GetStatusAsync(module.CourseId, user.Id);
+                        if (status != EnrollmentStatus.Approved)
+                            return RedirectToAction("Details", "Course", new { courseId = module.CourseId });
+                    }
+                }
+            }
 
             var chapterViewModel = await chapterService.GetViewAsync(chapterId, user.Id);
             if (chapterViewModel is null) return RedirectToAction("Index", "Course");
@@ -59,7 +77,7 @@ namespace quiz_project.Controllers
         }
 
         [HttpPost, ActionName("Create")]
-        public async Task<IActionResult> CreateChapterAsync(ChapterViewModel chapterViewModel)
+        public async Task<IActionResult> CreateChapterAsync(ChapterViewModel chapterViewModel, IFormFile? file)
         {
             if (!ModelState.IsValid)
             {
@@ -85,6 +103,16 @@ namespace quiz_project.Controllers
                 return View(chapterViewModel);
             }
 
+            if (file is not null && file.Length > 0)
+            {
+                var chapter = (await chapterRepository.GetChaptersByModuleIdAsync(chapterViewModel.ModuleId))
+                    .OrderByDescending(c => c.ChapterId).First();
+                var objectKey = await fileStorageService.UploadAsync(file, chapter.ChapterId);
+                chapterViewModel.ChapterId = chapter.ChapterId;
+                chapterViewModel.FilePath = objectKey;
+                await chapterService.PostEditAsync(chapterViewModel);
+            }
+
             return RedirectToAction("Edit", "Module", new { moduleId = chapterViewModel.ModuleId });
         }
 
@@ -108,7 +136,7 @@ namespace quiz_project.Controllers
         }
 
         [HttpPost, ActionName("Edit")]
-        public async Task<IActionResult> EditChapterAsync(ChapterViewModel chapterViewModel)
+        public async Task<IActionResult> EditChapterAsync(ChapterViewModel chapterViewModel, IFormFile? file)
         {
             if (!ModelState.IsValid)
             {
@@ -126,6 +154,14 @@ namespace quiz_project.Controllers
                 if (!owns) return RedirectToAction("Index", "Course");
             }
 
+            if (file is not null && file.Length > 0)
+            {
+                if (!string.IsNullOrEmpty(chapterViewModel.FilePath))
+                    await fileStorageService.DeleteAsync(chapterViewModel.FilePath);
+
+                chapterViewModel.FilePath = await fileStorageService.UploadAsync(file, chapterViewModel.ChapterId);
+            }
+
             var (success, errors) = await chapterService.PostEditAsync(chapterViewModel);
             if (!success)
             {
@@ -136,6 +172,17 @@ namespace quiz_project.Controllers
             }
 
             return RedirectToAction("Edit", "Module", new { moduleId = chapterViewModel.ModuleId });
+        }
+
+        [HttpGet, ActionName("Download")]
+        public async Task<IActionResult> DownloadFileAsync(int chapterId)
+        {
+            var chapter = await chapterRepository.GetChapterByIdAsync(chapterId);
+            if (chapter is null || string.IsNullOrEmpty(chapter.FilePath))
+                return NotFound();
+
+            var url = await fileStorageService.GetPresignedUrlAsync(chapter.FilePath);
+            return Redirect(url);
         }
 
         [HttpPost, ActionName("Delete")]

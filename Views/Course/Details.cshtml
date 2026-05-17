@@ -1,0 +1,91 @@
+@model quiz_project.ViewModels.CourseDetailsViewModel
+@using quiz_project.Entities
+
+<div class="form-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>@Model.Title</h1>
+        <a asp-controller="Menu" asp-action="BrowseCourses" class="btn btn-secondary">Back to courses</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-7">
+            <p class="lead">@Model.Description</p>
+
+            <table class="table table-borderless w-auto mt-3">
+                <tr>
+                    <td><strong>Creator</strong></td>
+                    <td>@Model.CreatorName</td>
+                </tr>
+                <tr>
+                    <td><strong>Modules</strong></td>
+                    <td>@Model.ModuleCount</td>
+                </tr>
+                <tr>
+                    <td><strong>Chapters</strong></td>
+                    <td>@Model.ChapterCount</td>
+                </tr>
+                <tr>
+                    <td><strong>Sequential</strong></td>
+                    <td>@(Model.IsSequential ? "Yes — chapters must be completed in order" : "No — open access")</td>
+                </tr>
+                <tr>
+                    <td><strong>Access</strong></td>
+                    <td>
+                        @if (Model.IsPaid)
+                        {
+                            <span class="badge bg-warning text-dark">Requires approval</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Free to join</span>
+                        }
+                    </td>
+                </tr>
+            </table>
+
+            @if (Model.UserEnrollmentStatus == null)
+            {
+                <form asp-action="Enroll" asp-route-courseId="@Model.CourseId" method="post" class="mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        @(Model.IsPaid ? "Request access" : "Enroll now")
+                    </button>
+                </form>
+            }
+            else if (Model.UserEnrollmentStatus == EnrollmentStatus.Pending)
+            {
+                <div class="alert alert-info mt-3">
+                    Your enrollment request is pending creator approval.
+                </div>
+            }
+            else if (Model.UserEnrollmentStatus == EnrollmentStatus.Approved)
+            {
+                <div class="alert alert-success mt-3">
+                    You are enrolled. <a asp-controller="Course" asp-action="Game" asp-route-CourseId="@Model.CourseId">Start course →</a>
+                </div>
+            }
+            else if (Model.UserEnrollmentStatus == EnrollmentStatus.Rejected)
+            {
+                <div class="alert alert-danger mt-3">
+                    Your enrollment request was rejected.
+                </div>
+            }
+        </div>
+
+        <div class="col-md-5">
+            <h5>Course content</h5>
+            @foreach (var module in Model.Modules)
+            {
+                <div class="card mb-2">
+                    <div class="card-body py-2">
+                        <strong>@module.Title</strong>
+                        <span class="text-muted ms-2 small">@module.ChapterCount chapter(s)</span>
+                        @if (module.HasQuiz)
+                        {
+                            <span class="badge bg-info ms-1">Quiz</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

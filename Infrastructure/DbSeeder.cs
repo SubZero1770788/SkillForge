@@ -122,16 +122,26 @@ namespace quiz_project.Infrastructure
                 {
                     new Course{
                         CourseId = 1,
-                        Title = "My first course",
-                        Description = "This course has no other meaning",
+                        Title = "European Geography & History",
+                        Description = "Test your knowledge of European countries, cities, rivers and world facts.",
                         IsPublic = true,
+                        IsSequential = true,
                         UserId = 5
                     },
                     new Course{
                         CourseId = 2,
-                        Title = "My second course",
-                        Description = "I did not know I can create more of them !",
-                        IsPublic = false,
+                        Title = "Music & Gaming Culture",
+                        Description = "Dive into the world of power metal, iconic game soundtracks and Pokémon.",
+                        IsPublic = true,
+                        IsSequential = false,
+                        UserId = 5
+                    },
+                    new Course{
+                        CourseId = 3,
+                        Title = "C# Programming Fundamentals",
+                        Description = "From basic syntax to advanced async and LINQ — a complete C# learning path.",
+                        IsPublic = true,
+                        IsSequential = true,
                         UserId = 5
                     }
                 };
@@ -143,11 +153,12 @@ namespace quiz_project.Infrastructure
                 {
                     new Quiz{
                         QuizId = 1,
-                        Title = "My first quiz",
-                        Description = "This quiz has no other meaning",
-                        IsPublic = true,
-                        UserId = 1,
-                        TotalScore = 200
+                        Title = "General Knowledge",
+                        Description = "A broad test of world facts — capitals, science, history and more.",
+                        IsPublic = false,
+                        UserId = 5,
+                        TotalScore = 200,
+                        Scope = QuizScope.Chapter
                     },
                     new Quiz{
                         QuizId = 2,
@@ -157,45 +168,50 @@ namespace quiz_project.Infrastructure
                         UserId = 1,
                         TotalScore = 0
                     },
-                        new Quiz{
+                    new Quiz{
                         QuizId = 3,
                         Title = "Power Metal Music",
                         Description = "Test your knowledge about legendary power metal bands and songs.",
-                        IsPublic = true,
-                        UserId = 1,
-                        TotalScore = 200
+                        IsPublic = false,
+                        UserId = 5,
+                        TotalScore = 200,
+                        Scope = QuizScope.Chapter
                     },
                     new Quiz{
                         QuizId = 4,
                         Title = "European Geography",
                         Description = "How well do you know the countries, cities, and rivers of Europe?",
-                        IsPublic = true,
-                        UserId = 1,
-                        TotalScore = 200
+                        IsPublic = false,
+                        UserId = 5,
+                        TotalScore = 200,
+                        Scope = QuizScope.Chapter
                     },
                     new Quiz{
                         QuizId = 5,
                         Title = "Pokemon",
                         Description = "Prove you're a true Pokémon Master with this quiz!",
-                        IsPublic = true,
-                        UserId = 1,
-                        TotalScore = 200
+                        IsPublic = false,
+                        UserId = 5,
+                        TotalScore = 200,
+                        Scope = QuizScope.Chapter
                     },
                     new Quiz{
                         QuizId = 6,
                         Title = "Amazing Game OST",
                         Description = "Recognize iconic soundtracks from video games.",
-                        IsPublic = true,
-                        UserId = 1,
-                        TotalScore = 200
+                        IsPublic = false,
+                        UserId = 5,
+                        TotalScore = 200,
+                        Scope = QuizScope.Chapter
                     },
                     new Quiz{
                         QuizId = 7,
                         Title = "C# Advanced",
                         Description = "Question C# advanced topics, including async, delegates, and LINQ.",
-                        IsPublic = true,
-                        UserId = 1,
-                        TotalScore = 200
+                        IsPublic = false,
+                        UserId = 5,
+                        TotalScore = 200,
+                        Scope = QuizScope.Chapter
                     }
                 };
 
@@ -3703,6 +3719,79 @@ namespace quiz_project.Infrastructure
             };
 
                 await context.Answers.AddRangeAsync(answers);
+                await context.SaveChangesAsync();
+
+                var modules = new List<Module>
+                {
+                    new Module{ ModuleId = 1, CourseId = 1, Title = "Western Europe", Description = "Countries, capitals and geography of Western Europe.", Order = 0 },
+                    new Module{ ModuleId = 2, CourseId = 1, Title = "World Knowledge", Description = "General facts about science, history and the world.", Order = 1 },
+                    new Module{ ModuleId = 3, CourseId = 2, Title = "Power Metal", Description = "The history and legends of power metal music.", Order = 0 },
+                    new Module{ ModuleId = 4, CourseId = 2, Title = "Video Game Music", Description = "Iconic soundtracks that defined gaming.", Order = 1 },
+                    new Module{ ModuleId = 5, CourseId = 2, Title = "Pokémon Universe", Description = "Everything about the world of Pokémon.", Order = 2 },
+                    new Module{ ModuleId = 6, CourseId = 3, Title = "C# Basics", Description = "Types, syntax, OOP and the fundamentals of C#.", Order = 0 },
+                    new Module{ ModuleId = 7, CourseId = 3, Title = "Advanced C# Topics", Description = "Async/await, LINQ, delegates and beyond.", Order = 1 }
+                };
+
+                await context.Modules.AddRangeAsync(modules);
+                await context.SaveChangesAsync();
+
+                var chapters = new List<Chapter>
+                {
+                    // Course 1 — European Geography & History
+                    new Chapter{ ChapterId = 1, ModuleId = 1, Order = 0, Title = "Introduction to Western Europe",
+                        Content = "Western Europe is home to some of the world's most visited countries — France, Germany, Spain, Italy and more. " +
+                                  "The region is known for its rich history, cultural diversity and political integration through the European Union. " +
+                                  "Key geographical features include the Alps, the Rhine, and the Atlantic coastline." },
+                    new Chapter{ ChapterId = 2, ModuleId = 1, Order = 1, Title = "European Geography Quiz", QuizId = 4 },
+
+                    new Chapter{ ChapterId = 3, ModuleId = 2, Order = 0, Title = "World Facts Overview",
+                        Content = "From the highest mountains to the deepest oceans, the world is full of fascinating facts. " +
+                                  "This chapter covers general knowledge spanning science, geography, history and culture. " +
+                                  "Topics include world capitals, notable inventions, historical events and natural phenomena." },
+                    new Chapter{ ChapterId = 4, ModuleId = 2, Order = 1, Title = "General Knowledge Quiz", QuizId = 1 },
+
+                    // Course 2 — Music & Gaming Culture
+                    new Chapter{ ChapterId = 5, ModuleId = 3, Order = 0, Title = "The History of Power Metal",
+                        Content = "Power metal emerged in the mid-1980s as a subgenre of heavy metal, characterized by fast tempos, " +
+                                  "high-pitched vocals and epic, fantasy-themed lyrics. Bands like Helloween, Blind Guardian and DragonForce " +
+                                  "defined the genre. Power metal draws heavily from classical music and is known for its optimistic tone " +
+                                  "compared to other metal subgenres." },
+                    new Chapter{ ChapterId = 6, ModuleId = 3, Order = 1, Title = "Power Metal Quiz", QuizId = 3 },
+
+                    new Chapter{ ChapterId = 7, ModuleId = 4, Order = 0, Title = "Legendary Game Soundtracks",
+                        Content = "Video game music has evolved from simple chiptune melodies to full orchestral compositions. " +
+                                  "Composers like Nobuo Uematsu (Final Fantasy), Koji Kondo (Mario, Zelda) and Jeremy Soule (Skyrim) " +
+                                  "created soundtracks that are inseparable from their games. The music sets tone, guides emotion " +
+                                  "and enhances immersion in ways unique to the interactive medium." },
+                    new Chapter{ ChapterId = 8, ModuleId = 4, Order = 1, Title = "Game OST Quiz", QuizId = 6 },
+
+                    new Chapter{ ChapterId = 9, ModuleId = 5, Order = 0, Title = "The Pokémon World",
+                        Content = "Pokémon is a media franchise created by Satoshi Tajiri and Ken Sugimori, launched in 1996. " +
+                                  "The games follow trainers who catch, train and battle creatures called Pokémon. " +
+                                  "The franchise spans games, anime, manga and trading cards. There are currently over 1000 species of Pokémon " +
+                                  "across nine generations, each introduced in a new region of the Pokémon world." },
+                    new Chapter{ ChapterId = 10, ModuleId = 5, Order = 1, Title = "Pokémon Quiz", QuizId = 5 },
+
+                    // Course 3 — C# Programming Fundamentals
+                    new Chapter{ ChapterId = 11, ModuleId = 6, Order = 0, Title = "C# Basics & Object-Oriented Programming",
+                        Content = "C# is a strongly-typed, object-oriented language developed by Microsoft as part of .NET. " +
+                                  "Core OOP concepts include encapsulation, inheritance, polymorphism and abstraction. " +
+                                  "C# uses classes, interfaces and structs as its primary building blocks. " +
+                                  "The language also supports properties, constructors, access modifiers and method overloading." },
+                    new Chapter{ ChapterId = 12, ModuleId = 6, Order = 1, Title = "Collections & LINQ Basics",
+                        Content = "C# provides rich collection types: List<T>, Dictionary<TKey, TValue>, HashSet<T> and more. " +
+                                  "LINQ (Language Integrated Query) allows querying collections with a SQL-like syntax directly in C#. " +
+                                  "Common LINQ methods include Where, Select, OrderBy, GroupBy, First, Any, All and Count. " +
+                                  "LINQ works on any IEnumerable<T> and integrates with Entity Framework for database queries." },
+                    new Chapter{ ChapterId = 13, ModuleId = 7, Order = 0, Title = "Async/Await & Delegates",
+                        Content = "Asynchronous programming in C# uses the async/await pattern built on Task and Task<T>. " +
+                                  "This allows non-blocking I/O operations without manually managing threads. " +
+                                  "Delegates are type-safe function pointers — the foundation of events and callbacks in C#. " +
+                                  "Common delegate types include Action, Func and Predicate. Lambda expressions provide a concise syntax for delegates." },
+                    new Chapter{ ChapterId = 14, ModuleId = 7, Order = 1, Title = "C# Advanced Quiz", QuizId = 7 },
+                };
+
+                await context.Chapters.AddRangeAsync(chapters);
                 await context.SaveChangesAsync();
 
                 await transaction.CommitAsync();

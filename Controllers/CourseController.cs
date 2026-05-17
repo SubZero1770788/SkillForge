@@ -23,7 +23,9 @@ namespace quiz_project.Controllers
 {
 
     public class CourseController(ICourseQueryService courseQueryService, ICourseService courseService,
-    IAccessValidationService accessValidationService, UserManager<User> userManager) : Controller
+    IAccessValidationService accessValidationService, IEnrollmentService enrollmentService,
+    ICourseRepository courseRepository, IModuleRepository moduleRepository,
+    UserManager<User> userManager) : Controller
     {
         [HttpGet]
         public async Task<IActionResult> Index()
@@ -71,6 +73,7 @@ namespace quiz_project.Controllers
         // }
 
         [HttpGet, ActionName("Create")]
+        [Authorize(Roles = "Creator")]
         public async Task<IActionResult> CreateNewCourseAsync()
         {
             var user = await userManager.GetUserAsync(User);
@@ -80,6 +83,7 @@ namespace quiz_project.Controllers
         }
 
         [HttpPost, ActionName("Create")]
+        [Authorize(Roles = "Creator")]
         public async Task<IActionResult> CreateNewQuizAsync(CourseViewModel courseViewModel)
         {
             if (ModelState.IsValid)
@@ -143,6 +147,126 @@ namespace quiz_project.Controllers
 
             }
             return RedirectToAction("Edit");
+        }
+
+        [HttpGet, ActionName("Details")]
+        public async Task<IActionResult> CourseDetailsAsync(int courseId)
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+
+            var course = await courseRepository.GetCourseByIdAsync(courseId);
+            if (course is null) return RedirectToAction("BrowseCourses", "Menu");
+
+            var modules = (await moduleRepository.GetModulesByCourseIdAsync(courseId))
+                .OrderBy(m => m.Order)
+                .ToList();
+
+            var creator = await userManager.FindByIdAsync(course.UserId.ToString());
+
+            var enrollmentStatus = await enrollmentService.GetStatusAsync(courseId, user.Id);
+
+            var vm = new CourseDetailsViewModel
+            {
+                CourseId = course.CourseId,
+                Title = course.Title,
+                Description = course.Description,
+                CreatorName = creator?.UserName ?? "—",
+                IsPaid = course.IsPaid,
+                IsSequential = course.IsSequential,
+                ModuleCount = modules.Count,
+                ChapterCount = modules.Sum(m => m.Chapters.Count),
+                UserEnrollmentStatus = enrollmentStatus,
+                Modules = modules.Select(m => new ModuleDetailsViewModel
+                {
+                    Title = m.Title,
+                    ChapterCount = m.Chapters.Count,
+                    HasQuiz = m.QuizId.HasValue
+                }).ToList()
+            };
+
+            return View(vm);
+        }
+
+        [HttpPost, ActionName("Enroll")]
+        public async Task<IActionResult> EnrollAsync(int courseId)
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+
+            var course = await courseRepository.GetCourseByIdAsync(courseId);
+            if (course is null) return RedirectToAction("BrowseCourses", "Menu");
+
+            await enrollmentService.EnrollAsync(courseId, user.Id, course.IsPaid);
+
+            return RedirectToAction("Details", new { courseId });
+        }
+
+        [HttpGet, ActionName("Enrollments")]
+        public async Task<IActionResult> EnrollmentsAsync(int courseId)
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+
+            if (!User.IsInRole("Admin"))
+            {
+                var owns = await accessValidationService.UserOwnsCourseAsync(courseId, user);
+                if (!owns) return RedirectToAction("Index");
+            }
+
+            var course = await courseRepository.GetCourseByIdAsync(courseId);
+            var vm = await enrollmentService.GetEnrollmentsAsync(courseId, course.Title);
+            return View(vm);
+        }
+
+        [HttpPost, ActionName("Approve")]
+        public async Task<IActionResult> ApproveEnrollmentAsync(int enrollmentId, int courseId)
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+
+            if (!User.IsInRole("Admin"))
+            {
+                var owns = await accessValidationService.UserOwnsCourseAsync(courseId, user);
+                if (!owns) return RedirectToAction("Index");
+            }
+
+            await enrollmentService.ApproveAsync(enrollmentId);
+            return RedirectToAction("Enrollments", new { courseId });
+        }
+
+        [HttpPost, ActionName("Reject")]
+        public async Task<IActionResult> RejectEnrollmentAsync(int enrollmentId, int courseId)
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+
+            if (!User.IsInRole("Admin"))
+            {
+                var owns = await accessValidationService.UserOwnsCourseAsync(courseId, user);
+                if (!owns) return RedirectToAction("Index");
+            }
+
+            await enrollmentService.RejectAsync(enrollmentId);
+            return RedirectToAction("Enrollments", new { courseId });
+        }
+
+        [HttpGet, ActionName("Statistics")]
+        public async Task<IActionResult> CourseStatisticsAsync(int Id)
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+
+            if (!User.IsInRole("Admin"))
+            {
+                var owns = await accessValidationService.UserOwnsCourseAsync(Id, user);
+                if (!owns) return RedirectToAction("Index")!;
+            }
+
+            var stats = await courseQueryService.GetCourseStatisticsAsync(Id);
+            if (stats is null) return RedirectToAction("Index");
+
+            return View(stats);
         }
 
         [HttpPost, ActionName("Delete")]

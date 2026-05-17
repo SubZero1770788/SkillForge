@@ -174,6 +174,21 @@ namespace quiz_project.Database
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
+            mb.Entity<CourseEnrollment>(en =>
+            {
+                en.HasKey(e => e.CourseEnrollmentId);
+
+                en.HasOne(e => e.Course)
+                    .WithMany()
+                    .HasForeignKey(e => e.CourseId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                en.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
             mb.Entity<AnswerState>(anss =>
             {
                 anss.HasKey(anss => anss.Id);
@@ -212,5 +227,6 @@ namespace quiz_project.Database
         public DbSet<AnswerSelection> AnswerSelections { get; set; }
         public DbSet<OnGoingQuizState> OnGoingQuizStates { get; set; }
         public DbSet<AnswerState> AnswerStates { get; set; }
+        public DbSet<CourseEnrollment> CourseEnrollments { get; set; }
     }
 }

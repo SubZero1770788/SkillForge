@@ -1,0 +1,90 @@
+@model quiz_project.ViewModels.CourseStatisticsViewModel
+
+<div class="stats-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="stats-title">Statistics — @Model.Title</h3>
+        <a asp-controller="Course" asp-action="Index" class="btn btn-danger text-white">Return</a>
+    </div>
+
+    <div class="mb-4">
+        <strong>Enrolled users:</strong> @Model.TotalUsers
+    </div>
+
+    @foreach (var module in Model.Modules)
+    {
+        var modulePercent = Model.TotalUsers > 0
+            ? Math.Round((double)module.CompletedByUsers / Model.TotalUsers * 100, 0)
+            : 0;
+
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>Module @module.Order — @module.Title</strong>
+                    @if (module.QuizId.HasValue)
+                    {
+                        <span class="badge bg-warning text-dark ms-2">
+                            Quiz: @module.QuizTitle
+                        </span>
+                        <a asp-controller="Quiz" asp-action="Statistics" asp-route-Id="@module.QuizId"
+                           asp-route-returnUrl="@Url.Action("Statistics", "Course", new { Id = Model.CourseId })"
+                           class="btn btn-outline-warning btn-sm ms-1">View quiz stats</a>
+                    }
+                </div>
+                <span class="text-muted small">
+                    Completed: @module.CompletedByUsers / @module.TotalUsers (@modulePercent%)
+                </span>
+            </div>
+
+            <div class="card-body p-0">
+                @if (!module.Chapters.Any())
+                {
+                    <div class="p-3 text-muted">No chapters in this module.</div>
+                }
+                else
+                {
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Chapter</th>
+                                <th>Completed</th>
+                                <th>%</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var chapter in module.Chapters)
+                            {
+                                var chapterPercent = chapter.TotalUsers > 0
+                                    ? Math.Round((double)chapter.CompletedByUsers / chapter.TotalUsers * 100, 0)
+                                    : 0;
+
+                                <tr>
+                                    <td class="text-muted">@chapter.Order</td>
+                                    <td>
+                                        @chapter.Title
+                                        @if (chapter.QuizId.HasValue)
+                                        {
+                                            <span class="badge bg-info ms-1">Quiz: @chapter.QuizTitle</span>
+                                        }
+                                    </td>
+                                    <td>@chapter.CompletedByUsers / @chapter.TotalUsers</td>
+                                    <td>@chapterPercent%</td>
+                                    <td>
+                                        @if (chapter.QuizId.HasValue)
+                                        {
+                                            <a asp-controller="Quiz" asp-action="Statistics"
+                                               asp-route-Id="@chapter.QuizId"
+                                               asp-route-returnUrl="@Url.Action("Statistics", "Course", new { Id = Model.CourseId })"
+                                               class="btn btn-outline-info btn-sm">Quiz stats</a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    }
+</div>

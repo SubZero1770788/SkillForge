@@ -20,7 +20,8 @@
     {
         <div class="mb-4">
             <h5>Attachment</h5>
-            <a href="@Model.FilePath" class="btn btn-outline-secondary" target="_blank">
+            <a asp-action="Download" asp-route-chapterId="@Model.ChapterId"
+               class="btn btn-outline-secondary" target="_blank">
                 Download file
             </a>
         </div>

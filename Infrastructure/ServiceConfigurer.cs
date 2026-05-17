@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Minio;
 using quiz_project.Database;
 using quiz_project.Database.Repositories;
 using quiz_project.Entities;
@@ -71,6 +72,7 @@ namespace quiz_project.Infrastructure
             builder.Services.AddScoped<IChapterRepository, ChapterRepository>();
             builder.Services.AddScoped<IProgressRepository, ProgressRepository>();
             builder.Services.AddScoped<IAttemptRepository, AttemptRepository>();
+            builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
             builder.Services.AddScoped<IOnGoingQuizRepository, OnGoingQuizRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
 
@@ -84,6 +86,14 @@ namespace quiz_project.Infrastructure
             builder.Services.AddScoped<IQuizService, QuizService>();
             builder.Services.AddScoped<ICourseService, CourseService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
+            builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+
+            var r2 = builder.Configuration.GetSection("R2");
+            builder.Services.AddMinio(opts => opts
+                .WithEndpoint($"{r2["AccountId"]}.r2.cloudflarestorage.com")
+                .WithCredentials(r2["AccessKey"], r2["SecretKey"])
+                .WithSSL());
 
             builder.Services.AddSingleton<IUserMapper, UserMapper>();
             builder.Services.AddSingleton<IQuizMapper, QuizMapper>();

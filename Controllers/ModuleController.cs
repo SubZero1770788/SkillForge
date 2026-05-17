@@ -14,7 +14,8 @@ namespace quiz_project.Controllers
         {
             var quizzes = await quizRepository.GetQuizesByUserAsync(userId);
             ViewBag.AvailableQuizzes = quizzes
-                .Select(q => new { q.QuizId, q.Title, q.Scope })
+                .Where(q => q.Scope == QuizScope.Module)
+                .Select(q => new { q.QuizId, q.Title })
                 .ToList();
         }
 

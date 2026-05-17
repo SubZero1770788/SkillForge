@@ -26,6 +26,20 @@ namespace quiz_project.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<UserPartProgress>> GetAllChapterProgressesForCourseAsync(int courseId)
+        {
+            return await context.UserPartProgresses
+                .Where(p => p.Chapter.Module.CourseId == courseId)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<UserModuleProgress>> GetAllModuleProgressesForCourseAsync(int courseId)
+        {
+            return await context.UserModuleProgresses
+                .Where(p => p.Module.CourseId == courseId)
+                .ToListAsync();
+        }
+
         public async Task MarkChapterCompletedAsync(int userId, int chapterId)
         {
             var progress = await context.UserPartProgresses

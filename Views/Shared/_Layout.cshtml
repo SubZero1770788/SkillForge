@@ -24,7 +24,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Quiz" asp-action="Index">Quizzler</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Quiz" asp-action="Index">SkillForge</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -34,28 +34,23 @@
                         @if (SignInManager.IsSignedIn(User) && (User.IsInRole("User") || User.IsInRole("Moderator") ||
                                                 User.IsInRole("Admin") || User.IsInRole("Creator")))
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Quiz" asp-action="Index">My
-                                    Quizzes</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Menu" asp-action="Browse">Browse
-                                        Quizzes</a>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="Course" asp-action="Index">My Courses</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-controller="Course" asp-action="Index">My
-                                            My Courses</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link text-dark" asp-area="" asp-controller="Menu" asp-action="BrowseCourses">
-                                                Browse Courses</a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a class="nav-link text-dark" asp-area="" asp-controller="User"
-                                                   asp-action="Settings">Settings</a>
-                                            </li>
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="Menu" asp-action="BrowseCourses">Browse Courses</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Settings">Settings</a>
+                                    </li>
                                         }
-                                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Manager") || User.IsInRole("Admin")))
+                                        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Creator"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Quiz" asp-action="Index">Manage Quizzes</a>
+                            </li>
+                        }
+                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Manager") || User.IsInRole("Admin")))
                                         {
                                             <li class="nav-item">
                                                 <a class="nav-link text-dark" asp-area="" asp-controller="Menu" asp-action="Active">Active

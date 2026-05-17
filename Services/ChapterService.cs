@@ -1,4 +1,3 @@
-using quiz_project.Entities;
 using quiz_project.Interfaces;
 using quiz_project.ViewModels;
 
@@ -6,7 +5,7 @@ namespace quiz_project.Services
 {
     public class ChapterService(IChapterRepository chapterRepository, IModuleRepository moduleRepository,
         ICourseRepository courseRepository, IProgressRepository progressRepository,
-        IQuizRepository quizRepository, IChapterMapper chapterMapper) : IChapterService
+        IChapterMapper chapterMapper) : IChapterService
     {
         public async Task<ChapterViewModel?> GetViewAsync(int chapterId, int userId)
         {
@@ -51,10 +50,6 @@ namespace quiz_project.Services
         {
             var chapter = chapterMapper.ToEntity(chapterViewModel);
             await chapterRepository.CreateChapterAsync(chapter);
-
-            if (chapter.QuizId.HasValue)
-                await quizRepository.UpdateQuizScopeAsync(chapter.QuizId.Value, QuizScope.Chapter);
-
             return (true, string.Empty);
         }
 
@@ -62,12 +57,6 @@ namespace quiz_project.Services
         {
             var existing = await chapterRepository.GetChapterByIdAsync(chapterViewModel.ChapterId);
             if (existing is null) return (false, new[] { "Chapter not found." });
-
-            if (existing.QuizId.HasValue && existing.QuizId != chapterViewModel.QuizId)
-                await quizRepository.UpdateQuizScopeAsync(existing.QuizId.Value, QuizScope.Standalone);
-
-            if (chapterViewModel.QuizId.HasValue)
-                await quizRepository.UpdateQuizScopeAsync(chapterViewModel.QuizId.Value, QuizScope.Chapter);
 
             var chapter = chapterMapper.ToEntity(chapterViewModel);
             await chapterRepository.UpdateChapterAsync(chapter);
@@ -78,10 +67,6 @@ namespace quiz_project.Services
         {
             var chapter = await chapterRepository.GetChapterByIdAsync(chapterId);
             if (chapter is null) return;
-
-            if (chapter.QuizId.HasValue)
-                await quizRepository.UpdateQuizScopeAsync(chapter.QuizId.Value, QuizScope.Standalone);
-
             await chapterRepository.DeleteChapterAsync(chapter);
         }
 

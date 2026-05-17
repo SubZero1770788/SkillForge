@@ -8,6 +8,7 @@ namespace quiz_project.Entities
         public int TotalScore { get; set; }
         public bool IsPublic { get; set; }
         public bool IsSequential { get; set; }
+        public bool IsPaid { get; set; }
         public List<Module> Modules { get; set; } = new();
         public User User { get; set; }
         public required int UserId { get; set; }

@@ -22,10 +22,11 @@
             </div>
 
             <div class="quiz-buttons no-wrap-buttons">
-                <form asp-controller="Course" asp-action="Game" method="get">
-                    <input type="hidden" name="CourseId" value="@courseViewModel?.CourseId" />
-                    <button type="submit" class="btn btn-success text-white">View Course</button>
-                </form>
+                @if (currentAction == "Menu")
+                {
+                    <a asp-controller="Course" asp-action="Details" asp-route-courseId="@courseViewModel?.CourseId"
+                       class="btn btn-success text-white">View Course</a>
+                }
 
                 @if (currentAction == "Course" || User.IsInRole("Admin"))
                 {
@@ -43,6 +44,9 @@
                         <input type="hidden" name="Id" value="@courseViewModel?.CourseId" />
                         <button type="submit" class="btn btn-info text-white">Statistics</button>
                     </form>
+
+                    <a asp-controller="Course" asp-action="Enrollments" asp-route-courseId="@courseViewModel?.CourseId"
+                       class="btn btn-outline-primary">Enrollments</a>
                 }
             </div>
         </div>

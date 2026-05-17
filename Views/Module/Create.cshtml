@@ -35,8 +35,7 @@
                     {
                         @foreach (var quiz in ViewBag.AvailableQuizzes)
                         {
-                            var scopeLabel = quiz.Scope.ToString() == "Standalone" ? "" : $" [{quiz.Scope}]";
-                            <option value="@quiz.QuizId">@quiz.Title@scopeLabel</option>
+                            <option value="@quiz.QuizId">@quiz.Title</option>
                         }
                     }
                 </select>

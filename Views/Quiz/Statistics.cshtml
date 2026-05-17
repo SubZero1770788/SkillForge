@@ -3,9 +3,16 @@
 <div class="stats-wrapper">
     <div class="d-flex justify-content-between align-items-center">
         <h3 class="stats-title">Here's statistics for @Model.Title</h3>
-        <form asp-controller="Quiz" asp-action="Index" method="get">
-            <button type="submit" class="btn btn-danger text-white">Return</button>
-        </form>
+        @if (!string.IsNullOrEmpty(ViewBag.ReturnUrl as string))
+        {
+            <a href="@ViewBag.ReturnUrl" class="btn btn-danger text-white">Return</a>
+        }
+        else
+        {
+            <form asp-controller="Quiz" asp-action="Index" method="get">
+                <button type="submit" class="btn btn-danger text-white">Return</button>
+            </form>
+        }
     </div>
 
     @{

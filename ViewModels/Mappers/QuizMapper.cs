@@ -22,6 +22,7 @@ namespace quiz_project.ViewModels.Mappers
                 UserId = userId,
                 IsPublic = quizViewModel.IsPublic,
                 IsRandomized = quizViewModel.IsRandomized,
+                Scope = quizViewModel.Scope,
                 Questions = quizViewModel.Questions.Select((qvm, index) => new Question
                 {
                     QuizId = quizViewModel.QuizId,
@@ -105,6 +106,7 @@ namespace quiz_project.ViewModels.Mappers
             {
                 IsPublic = quiz.IsPublic,
                 IsRandomized = quiz.IsRandomized,
+                Scope = quiz.Scope,
                 QuizId = quiz!.QuizId,
                 Title = quiz.Title,
                 Description = quiz.Description,

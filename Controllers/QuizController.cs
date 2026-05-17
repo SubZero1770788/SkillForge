@@ -1,22 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using quiz_project.Database;
-using quiz_project.Database.Migrations;
-using quiz_project.Database.Repositories;
 using quiz_project.Entities;
-using quiz_project.Entities.Repositories;
 using quiz_project.Interfaces;
-using quiz_project.Services;
 using quiz_project.ViewModels;
-using static quiz_project.ViewModels.QuizSummaryViewModel;
+
 
 namespace quiz_project.Controllers
 {
@@ -26,6 +14,7 @@ namespace quiz_project.Controllers
                                  IQuizQueryService quizQueryService) : Controller
     {
         [HttpGet]
+        [Authorize(Roles = "Creator")]
         public async Task<IActionResult> Index()
         {
             var user = await userManager.GetUserAsync(User);
@@ -53,7 +42,7 @@ namespace quiz_project.Controllers
         }
 
         [HttpGet, ActionName("Statistics")]
-        public async Task<IActionResult> CheckQuizStats(int Id)
+        public async Task<IActionResult> CheckQuizStats(int Id, string? returnUrl = null)
         {
             var user = await userManager.GetUserAsync(User);
             if (user is null) return RedirectToAction("Register", "User")!;
@@ -67,10 +56,12 @@ namespace quiz_project.Controllers
             var (success, quizStatisticsModel) = await quizQueryService.GetQuizStatisticsAsync(Id, user.Id);
             if (!success) return View("ZeroAttempts");
 
+            ViewBag.ReturnUrl = returnUrl;
             return View(quizStatisticsModel);
         }
 
         [HttpGet, ActionName("Create")]
+        [Authorize(Roles = "Creator")]
         public async Task<IActionResult> CreateNewQuizAsync()
         {
             var user = await userManager.GetUserAsync(User);
@@ -80,6 +71,7 @@ namespace quiz_project.Controllers
         }
 
         [HttpPost, ActionName("Create")]
+        [Authorize(Roles = "Creator")]
         public async Task<IActionResult> CreateNewQuizAsync(QuizViewModel quizViewModel)
         {
             if (ModelState.IsValid)
@@ -100,6 +92,7 @@ namespace quiz_project.Controllers
         }
 
         [HttpGet, ActionName("Edit")]
+        [Authorize(Roles = "Creator")]
         public async Task<IActionResult> EditQuizAsync(int quizId)
         {
             var user = await userManager.GetUserAsync(User);
@@ -116,6 +109,7 @@ namespace quiz_project.Controllers
         }
 
         [HttpPost, ActionName("Edit")]
+        [Authorize(Roles = "Creator")]
         public async Task<IActionResult> EditQuizAsync(QuizViewModel quizViewModel)
         {
             if (ModelState.IsValid)
@@ -146,6 +140,7 @@ namespace quiz_project.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Creator")]
         public async Task<IActionResult> DeleteQuizAsync(int Id)
         {
             var user = await userManager.GetUserAsync(User);

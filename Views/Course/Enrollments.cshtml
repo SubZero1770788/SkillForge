@@ -1,0 +1,65 @@
+@model quiz_project.ViewModels.EnrollmentListViewModel
+@using quiz_project.Entities
+
+<div class="form-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Enrollments — @Model.CourseTitle</h3>
+        <a asp-controller="Course" asp-action="Index" class="btn btn-secondary">Back</a>
+    </div>
+
+    @if (!Model.Enrollments.Any())
+    {
+        <div class="alert alert-info">No enrollment requests yet.</div>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Enrolled at</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var e in Model.Enrollments)
+                {
+                    <tr>
+                        <td>@e.UserName</td>
+                        <td>@e.EnrolledAt.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>
+                            @switch (e.Status)
+                            {
+                                case EnrollmentStatus.Pending:
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                    break;
+                                case EnrollmentStatus.Approved:
+                                    <span class="badge bg-success">Approved</span>
+                                    break;
+                                case EnrollmentStatus.Rejected:
+                                    <span class="badge bg-danger">Rejected</span>
+                                    break;
+                            }
+                        </td>
+                        <td>
+                            @if (e.Status == EnrollmentStatus.Pending)
+                            {
+                                <form asp-action="Approve" method="post" class="d-inline">
+                                    <input type="hidden" name="enrollmentId" value="@e.EnrollmentId" />
+                                    <input type="hidden" name="courseId" value="@Model.CourseId" />
+                                    <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                </form>
+                                <form asp-action="Reject" method="post" class="d-inline ms-1">
+                                    <input type="hidden" name="enrollmentId" value="@e.EnrollmentId" />
+                                    <input type="hidden" name="courseId" value="@Model.CourseId" />
+                                    <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
