@@ -16,7 +16,8 @@ namespace quiz_project.ViewModels.Mappers
                 Order = viewModel.Order,
                 Content = viewModel.Content,
                 FilePath = viewModel.FilePath,
-                QuizId = viewModel.QuizId
+                QuizId = viewModel.QuizId,
+                RequireQuizPass = viewModel.RequireQuizPass
             };
         }
 
@@ -31,6 +32,7 @@ namespace quiz_project.ViewModels.Mappers
                 Content = chapter.Content,
                 FilePath = chapter.FilePath,
                 QuizId = chapter.QuizId,
+                RequireQuizPass = chapter.RequireQuizPass,
                 IsCompleted = isCompleted,
                 IsLocked = isLocked
             };

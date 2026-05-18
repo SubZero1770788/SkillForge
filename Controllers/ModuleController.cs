@@ -8,6 +8,7 @@ namespace quiz_project.Controllers
 {
     public class ModuleController(IModuleService moduleService, ICourseQueryService courseQueryService,
         IAccessValidationService accessValidationService, IQuizRepository quizRepository,
+        IModuleRepository moduleRepository, IFileStorageService fileStorageService,
         UserManager<User> userManager) : Controller
     {
         private async Task LoadAvailableQuizzes(int userId)
@@ -36,7 +37,7 @@ namespace quiz_project.Controllers
         }
 
         [HttpPost, ActionName("Create")]
-        public async Task<IActionResult> CreateModuleAsync(ModuleViewModel moduleViewModel)
+        public async Task<IActionResult> CreateModuleAsync(ModuleViewModel moduleViewModel, IFormFile? file)
         {
             if (!ModelState.IsValid)
             {
@@ -62,6 +63,15 @@ namespace quiz_project.Controllers
                 return View(moduleViewModel);
             }
 
+            if (file is not null && file.Length > 0)
+            {
+                var modules = await moduleRepository.GetModulesByCourseIdAsync(moduleViewModel.CourseId);
+                var module = modules.OrderByDescending(m => m.ModuleId).First();
+                moduleViewModel.ModuleId = module.ModuleId;
+                moduleViewModel.RoadmapFilePath = await fileStorageService.UploadAsync(file, module.ModuleId, "modules");
+                await moduleService.PostEditAsync(moduleViewModel);
+            }
+
             return RedirectToAction("Edit", "Course", new { courseId = moduleViewModel.CourseId });
         }
 
@@ -84,8 +94,27 @@ namespace quiz_project.Controllers
             return View(moduleViewModel);
         }
 
+        [HttpGet, ActionName("Content")]
+        public async Task<IActionResult> ContentPartialAsync(int moduleId)
+        {
+            var module = await moduleRepository.GetModuleByIdAsync(moduleId);
+            if (module is null) return NotFound();
+            return PartialView("_Content", module);
+        }
+
+        [HttpGet, ActionName("Download")]
+        public async Task<IActionResult> DownloadFileAsync(int moduleId)
+        {
+            var module = await moduleRepository.GetModuleByIdAsync(moduleId);
+            if (module is null || string.IsNullOrEmpty(module.RoadmapFilePath))
+                return NotFound();
+
+            var (stream, contentType, fileName) = await fileStorageService.DownloadAsync(module.RoadmapFilePath);
+            return File(stream, contentType, fileName);
+        }
+
         [HttpPost, ActionName("Edit")]
-        public async Task<IActionResult> EditModuleAsync(ModuleViewModel moduleViewModel)
+        public async Task<IActionResult> EditModuleAsync(ModuleViewModel moduleViewModel, IFormFile? file)
         {
             if (!ModelState.IsValid)
             {
@@ -101,6 +130,14 @@ namespace quiz_project.Controllers
             {
                 var owns = await accessValidationService.UserOwnsCourseAsync(moduleViewModel.CourseId, user);
                 if (!owns) return RedirectToAction("Index", "Course");
+            }
+
+            if (file is not null && file.Length > 0)
+            {
+                if (!string.IsNullOrEmpty(moduleViewModel.RoadmapFilePath))
+                    await fileStorageService.DeleteAsync(moduleViewModel.RoadmapFilePath);
+
+                moduleViewModel.RoadmapFilePath = await fileStorageService.UploadAsync(file, moduleViewModel.ModuleId);
             }
 
             var (success, errors) = await moduleService.PostEditAsync(moduleViewModel);

@@ -12,9 +12,9 @@ namespace quiz_project.Interfaces
         public Quiz ToEntity(QuizViewModel quizViewModel, int userId);
         public QuizViewModel ToQuizViewModel(Quiz quiz);
         public QuizStatisticsModel ToQuizStatisticsModel(Quiz quiz, double averageScores, IEnumerable<QuizAttempt> quizAttempts,
-                            QuizAttempt topUserAttempt, List<QuizAttempt> topScores,
-                            Dictionary<int, string> users, Dictionary<(int QuestionId, int AnswerId), int>? answerCounts);
+                            QuizAttempt? topUserAttempt, List<QuizAttempt> topScores,
+                            Dictionary<int, string?> users, Dictionary<(int QuestionId, int AnswerId), int>? answerCounts);
         public QuizSummaryViewModel ToQuizSummaryViewModel(Quiz quiz, List<QuizAttempt> topScores,
-                            Dictionary<int, string> users, QuizAttempt playerScore, QuizAttempt topPlayerScore);
+                            Dictionary<int, string?> users, QuizAttempt? playerScore, QuizAttempt? topPlayerScore);
     }
 }

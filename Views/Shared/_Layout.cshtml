@@ -34,20 +34,32 @@
                         @if (SignInManager.IsSignedIn(User) && (User.IsInRole("User") || User.IsInRole("Moderator") ||
                                                 User.IsInRole("Admin") || User.IsInRole("Creator")))
                         {
-                                    <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-controller="Course" asp-action="Index">My Courses</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-controller="Menu" asp-action="BrowseCourses">Browse Courses</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Settings">Settings</a>
-                                    </li>
-                                        }
-                                        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Creator"))
-                        {
+                            @if (User.IsInRole("User"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Course" asp-action="MyCourses">Courses</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Menu" asp-action="BrowseCourses">Browse Courses</a>
+                                </li>
+                            }
+                            @if (User.IsInRole("Admin") || User.IsInRole("Creator"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Course" asp-action="Index">My Courses</a>
+                                </li>
+                            }
+                            @if (User.IsInRole("Admin") || User.IsInRole("Creator"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Quiz" asp-action="Index">Manage Quizzes</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Quiz" asp-action="PendingGrading">Grade Answers</a>
+                                </li>
+                            }
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Quiz" asp-action="Index">Manage Quizzes</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Settings">Settings</a>
                             </li>
                         }
                         @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Manager") || User.IsInRole("Admin")))

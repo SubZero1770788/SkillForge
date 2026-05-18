@@ -90,10 +90,19 @@ namespace quiz_project.Infrastructure
             builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
             var r2 = builder.Configuration.GetSection("R2");
-            builder.Services.AddMinio(opts => opts
+            var minioHandler = new HttpClientHandler
+            {
+                SslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13,
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+            var minioClient = new MinioClient()
                 .WithEndpoint($"{r2["AccountId"]}.r2.cloudflarestorage.com")
-                .WithCredentials(r2["AccessKey"], r2["SecretKey"])
-                .WithSSL());
+                .WithCredentials(r2["AccessKey"]!, r2["SecretKey"]!)
+                .WithRegion("auto")
+                .WithSSL()
+                .WithHttpClient(new HttpClient(minioHandler))
+                .Build();
+            builder.Services.AddSingleton<IMinioClient>(minioClient);
 
             builder.Services.AddSingleton<IUserMapper, UserMapper>();
             builder.Services.AddSingleton<IQuizMapper, QuizMapper>();

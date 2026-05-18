@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using quiz_project.Common;
 using quiz_project.Entities;
+using quiz_project.Entities.Definition;
 using quiz_project.Entities.Repositories;
 using quiz_project.Extensions;
 using quiz_project.Interfaces;
@@ -23,8 +24,17 @@ namespace quiz_project.Services
             var errors = new List<string>();
             for (int i = 0; i < quizViewModel.Questions.Count; i++)
             {
-                if (!quizViewModel.Questions[i].Answers.Any(a => a.IsCorrect))
-                    errors.Add($"Questions[{i}].Answers : Question {i + 1} must have at least one correct answer.");
+                var q = quizViewModel.Questions[i];
+
+                // Open-text question types don't use answer options
+                if (q.Type == QuestionType.FillInTheBlank || q.Type == QuestionType.OpenWithImage)
+                    continue;
+
+                if (q.Answers.Count < 2)
+                    errors.Add($"Question {i + 1}: closed questions must have at least 2 answers.");
+
+                if (!q.Answers.Any(a => a.IsCorrect))
+                    errors.Add($"Question {i + 1}: must have at least one answer marked as correct.");
             }
             return errors;
         }

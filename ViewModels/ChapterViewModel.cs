@@ -14,5 +14,6 @@ namespace quiz_project.ViewModels
         public int? QuizId { get; set; }
         public bool IsCompleted { get; set; }
         public bool IsLocked { get; set; }
+        public bool RequireQuizPass { get; set; }
     }
 }

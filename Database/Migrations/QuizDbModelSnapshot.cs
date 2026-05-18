@@ -189,6 +189,9 @@ namespace quiz_project.Database.Migrations
                     b.Property<int?>("QuizId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("RequireQuizPass")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -281,6 +284,9 @@ namespace quiz_project.Database.Migrations
                     b.Property<int?>("OnGoingQuizStateId1")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("OpenText")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("QuestionId")
                         .HasColumnType("INTEGER");
 
@@ -344,6 +350,9 @@ namespace quiz_project.Database.Migrations
                     b.Property<int?>("QuizId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("RequireQuizPass")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("RoadmapFilePath")
                         .HasColumnType("TEXT");
 
@@ -380,6 +389,37 @@ namespace quiz_project.Database.Migrations
                     b.ToTable("OnGoingQuizQuestion");
                 });
 
+            modelBuilder.Entity("quiz_project.Entities.OpenAnswerRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsGraded")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("ManualScore")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("OpenText")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("QuizAttemptId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionId");
+
+                    b.HasIndex("QuizAttemptId");
+
+                    b.ToTable("OpenAnswerRecords");
+                });
+
             modelBuilder.Entity("quiz_project.Entities.Question", b =>
                 {
                     b.Property<int>("QuestionId")
@@ -390,10 +430,22 @@ namespace quiz_project.Database.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("Grading")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ImagePath")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Keywords")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("QuestionScore")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("QuizId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Type")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("QuestionId");
@@ -417,6 +469,9 @@ namespace quiz_project.Database.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsRandomized")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PassPercentage")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Scope")
@@ -830,6 +885,25 @@ namespace quiz_project.Database.Migrations
                     b.Navigation("OnGoingQuizState");
                 });
 
+            modelBuilder.Entity("quiz_project.Entities.OpenAnswerRecord", b =>
+                {
+                    b.HasOne("quiz_project.Entities.Question", "Question")
+                        .WithMany()
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("quiz_project.Entities.QuizAttempt", "QuizAttempt")
+                        .WithMany("OpenAnswerRecords")
+                        .HasForeignKey("QuizAttemptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Question");
+
+                    b.Navigation("QuizAttempt");
+                });
+
             modelBuilder.Entity("quiz_project.Entities.Question", b =>
                 {
                     b.HasOne("quiz_project.Entities.Quiz", "Quiz")
@@ -939,6 +1013,8 @@ namespace quiz_project.Database.Migrations
             modelBuilder.Entity("quiz_project.Entities.QuizAttempt", b =>
                 {
                     b.Navigation("AnswerSelections");
+
+                    b.Navigation("OpenAnswerRecords");
                 });
 
             modelBuilder.Entity("quiz_project.Entities.User", b =>

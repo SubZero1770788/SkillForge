@@ -1,0 +1,29 @@
+@model quiz_project.Entities.Module
+
+<h2 class="mb-3">@Model.Title</h2>
+
+@if (!string.IsNullOrWhiteSpace(Model.Description))
+{
+    <div class="card p-4 mb-4">
+        <p style="white-space: pre-wrap">@Model.Description</p>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.RoadmapFilePath))
+{
+    <div class="mb-4">
+        <h5>Module attachment</h5>
+        <a href="/Module/Download?moduleId=@Model.ModuleId"
+           class="btn btn-outline-secondary" target="_blank">
+            Download file
+        </a>
+    </div>
+}
+
+@if (Model.QuizId.HasValue)
+{
+    <div class="mb-4">
+        <h5>Module Quiz</h5>
+        <a href="/QuizGame/Index?quizId=@Model.QuizId" class="btn btn-primary">Start quiz</a>
+    </div>
+}

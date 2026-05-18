@@ -22,6 +22,15 @@ namespace quiz_project.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<CourseEnrollment>> GetByUserAsync(int userId)
+        {
+            return await context.CourseEnrollments
+                .Include(e => e.Course)
+                .Where(e => e.UserId == userId)
+                .OrderByDescending(e => e.EnrolledAt)
+                .ToListAsync();
+        }
+
         public async Task<CourseEnrollment?> GetByIdAsync(int enrollmentId)
         {
             return await context.CourseEnrollments

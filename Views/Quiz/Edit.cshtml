@@ -1,29 +1,27 @@
-@model quiz_project.ViewModels.QuizViewModel;
+@model quiz_project.ViewModels.QuizViewModel
+@using quiz_project.Entities.Definition
 
 @section Scripts {
-    <script src="~/js/quizEditor.js"></script>
+    <script src="~/js/quizEditor.js?v=2"></script>
 
     <script>
-        let questionCounter = @Model.Questions.Count();
-
-        function updateCounter() {
-        questionCounter++;
-        }
-
         function hideMessage() {
-        var message = document.querySelector(".alert-info");
-        if (message) {
-        document.querySelector(".alert-info").style.display = "none";
+            var message = document.querySelector(".alert-info");
+            if (message) message.style.display = "none";
         }
-        }
+
+        // On load, only initialize grading-method visibility (fields already rendered server-side)
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll("select[id^='grading-']").forEach(function (sel) {
+                onGradingMethodChange(sel, parseInt(sel.dataset.qidx));
+            });
+        });
     </script>
 }
 
 <div class="form-wrapper">
     <div class="d-flex justify-content-between align-items-center">
         <h1>Edit This Quiz</h1>
-
-
         <form asp-controller="Quiz" asp-action="Index" method="get" class="col">
             <button type="submit" class="btn btn-danger text-white">Return</button>
         </form>
@@ -47,25 +45,22 @@
 
                 <div class="form-group">
                     <label asp-for="IsPublic">Make quiz public?</label>
-
                     <div class="form-check">
                         <input class="form-check-input" type="radio" asp-for="IsPublic" value="true" />
                         <label class="form-check-label">Yes</label>
                     </div>
-
                     <div class="form-check">
                         <input class="form-check-input" type="radio" asp-for="IsPublic" value="false" />
                         <label class="form-check-label">No</label>
                     </div>
                 </div>
+
                 <div class="form-group">
                     <label asp-for="IsRandomized">Make quiz randomized?</label>
-
                     <div class="form-check">
                         <input class="form-check-input" type="radio" asp-for="IsRandomized" value="true" />
                         <label class="form-check-label">Yes</label>
                     </div>
-
                     <div class="form-check">
                         <input class="form-check-input" type="radio" asp-for="IsRandomized" value="false" />
                         <label class="form-check-label">No</label>
@@ -74,90 +69,149 @@
 
                 <div class="form-group">
                     <label asp-for="Scope">Quiz type</label>
-
                     <div class="form-check">
                         <input class="form-check-input" type="radio" asp-for="Scope" value="@QuizScope.Module" />
                         <label class="form-check-label">Module quiz</label>
                     </div>
-
                     <div class="form-check">
                         <input class="form-check-input" type="radio" asp-for="Scope" value="@QuizScope.Chapter" />
                         <label class="form-check-label">Chapter quiz</label>
                     </div>
                 </div>
 
+                <div class="form-group mb-3 mt-2">
+                    <label asp-for="PassPercentage">Pass threshold (%, 0 = no requirement)</label>
+                    <input asp-for="PassPercentage" type="number" min="0" max="100" class="form-control" style="max-width:120px;" />
+                </div>
+
                 <button type="submit" class="btn btn-primary mt-2">Update</button>
+                <div asp-validation-summary="All" class="text-danger mt-2"></div>
             </div>
 
             <div class="col-md-6 d-flex flex-column align-items-end">
                 @if (!Model.Questions.Any())
                 {
-                    <div class="alert alert-info">
-                        This quiz has no questions yet.
-                    </div>
+                    <div class="alert alert-info">This quiz has no questions yet.</div>
                 }
 
                 <div id="questions-container">
                     @for (int i = 0; i < Model.Questions.Count; i++)
                     {
-                        var question = Model.Questions[i];
-                        var qIndex = question.Index ?? i;
+                        var q = Model.Questions[i];
+                        var qIdx = q.Index ?? i;
+                        var qt = q.Type;
 
-                        <input type="hidden" name="Questions[@i].QuestionId" value="@Model.Questions[i].QuestionId" />
-                        <input type="hidden" name="Questions[@qIndex].Index" value="@qIndex" />
-                        <div type="hidden" class="border p-3 mb-3 bg-light question-box" id="question-@qIndex"
-                             data-question-index="@qIndex">
-                            <button type="button" class="btn btn-danger mb-2"
-                                    onclick="removeQuestion(@qIndex)">Remove</button>
+                        <div class="border p-3 mb-3 bg-light question-box" id="question-@qIdx"
+                             data-question-index="@qIdx">
+
+                            <button type="button" class="btn btn-danger btn-sm mb-2"
+                                    onclick="removeQuestion(@qIdx)">Remove</button>
                             <h5>Question @(i + 1)</h5>
 
-                            <div class="form-group">
+                            <input type="hidden" name="Questions[@i].QuestionId" value="@q.QuestionId" />
+                            <input type="hidden" name="Questions[@i].Index" value="@qIdx" />
+
+                            <div class="form-group mb-2">
+                                <label>Type</label>
+                                <select name="Questions[@i].Type" class="form-control"
+                                        onchange="onQuestionTypeChange(this, @qIdx, false)">
+                                    <option value="@((int)QuestionType.MultipleChoice)" selected="@(qt == QuestionType.MultipleChoice)">Multiple choice (checkboxes)</option>
+                                    <option value="@((int)QuestionType.SingleChoice)" selected="@(qt == QuestionType.SingleChoice)">Single choice (radio)</option>
+                                    <option value="@((int)QuestionType.FillInTheBlank)" selected="@(qt == QuestionType.FillInTheBlank)">Fill in the blank</option>
+                                    <option value="@((int)QuestionType.OpenWithImage)" selected="@(qt == QuestionType.OpenWithImage)">Open with image</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group mb-2">
                                 <label>Description</label>
-                                <input name="Questions[@i].Description" asp-for="@question.Description"
-                                       class="form-control" />
-                                <span asp-validation-for="@question.Description" class="text-danger"></span>
+                                <input name="Questions[@i].Description" value="@q.Description" class="form-control" required />
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group mb-2">
                                 <label>Score</label>
-                                <input name="Questions[@i].QuestionScore" asp-for="@question.QuestionScore"
-                                       class="form-control" />
-                                <span asp-validation-for="@question.QuestionScore" class="text-danger"></span>
+                                <input type="number" name="Questions[@i].QuestionScore" value="@q.QuestionScore" class="form-control" required />
                             </div>
 
-                            <div class="form-group">
-                                <label>How many answers?</label>
-                                <input type="number" min="1" max="10" class="form-control" placeholder="e.g. 4"
-                                       onchange="addAnswers(this, @qIndex)" />
-                            </div>
-                            <div id="answers-@qIndex">
-                            @for (int j = 0; j < question.Answers.Count; j++)
-                            {
-                                var answer = question.Answers[j];
-                                <div class="form-group">
-                                    <input type="hidden" name="Questions[@i].Answers[@j].AnswerId" value="@answer.AnswerId" />
-                                    <label>Answer @(j + 1)</label>
-                                    <input name="Questions[@i].Answers[@j].Description" asp-for="@answer.Description"
-                                           class="form-control mb-1" />
-                                    <span asp-validation-for="@answer.Description" class="text-danger"></span>
-                                    <div class="form-check">
-                                        <label class="form-check-label">Correct</label>
-                                        <input name="Questions[@i].Answers[@j].IsCorrect" asp-for="@answer.IsCorrect"
-                                               class="form-check-input" />
-                                        <span asp-validation-for="@answer.IsCorrect" class="text-danger"></span>
+                            @* ── type-specific fields injected by JS, seeded below ── *@
+                            <div id="type-fields-@qIdx">
+
+                                @if (qt == QuestionType.MultipleChoice || qt == QuestionType.SingleChoice)
+                                {
+                                    <div class="form-group mb-2">
+                                        <label>Number of answers</label>
+                                        <input type="number" min="2" max="10" class="form-control" style="max-width:120px;"
+                                               placeholder="e.g. 4" onchange="addAnswers(this, @qIdx, @((int)qt))" />
                                     </div>
-                                </div>
-                            }
+                                    <div id="answers-@qIdx">
+                                        @for (int j = 0; j < q.Answers.Count; j++)
+                                        {
+                                            var ans = q.Answers[j];
+                                            var inputType = qt == QuestionType.SingleChoice ? "radio" : "checkbox";
+                                            <div class="form-group mb-2">
+                                                <input type="hidden" name="Questions[@i].Answers[@j].AnswerId" value="@ans.AnswerId" />
+                                                <label>Answer @(j + 1)</label>
+                                                <input name="Questions[@i].Answers[@j].Description" value="@ans.Description" class="form-control mb-1" />
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="@inputType"
+                                                           name="Questions[@i].Answers[@j].IsCorrect"
+                                                           value="true" id="correct-@(qIdx)-@j"
+                                                           checked="@ans.IsCorrect" />
+                                                    <label class="form-check-label" for="correct-@(qIdx)-@j">Mark as correct</label>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else if (qt == QuestionType.FillInTheBlank)
+                                {
+                                    <div class="form-group mb-2">
+                                        <label>Accepted answers <small class="text-muted">(comma-separated)</small></label>
+                                        <input type="text" name="Questions[@i].Keywords" value="@q.Keywords" class="form-control"
+                                               placeholder="e.g. Paris, paris" />
+                                    </div>
+                                }
+                                else if (qt == QuestionType.OpenWithImage)
+                                {
+                                    <div class="form-group mb-2">
+                                        <label>Question image</label>
+                                        @if (!string.IsNullOrEmpty(q.ImagePath))
+                                        {
+                                            <div class="mb-1">
+                                                <img src="/Quiz/QuestionImage?path=@Uri.EscapeDataString(q.ImagePath)"
+                                                     style="max-height:120px;border-radius:6px;" alt="current image" />
+                                            </div>
+                                        }
+                                        <input type="file" accept="image/*" class="form-control"
+                                               onchange="uploadQuestionImage(this, @qIdx)" />
+                                        <input type="hidden" name="Questions[@i].ImagePath"
+                                               id="img-path-@qIdx" value="@q.ImagePath" />
+                                        <div id="img-preview-@qIdx"></div>
+                                    </div>
+                                    <div class="form-group mb-2">
+                                        <label>Grading method</label>
+                                        <select name="Questions[@i].Grading" class="form-control"
+                                                onchange="onGradingMethodChange(this, @qIdx)">
+                                            <option value="0" selected="@(q.Grading != GradingMethod.Manual)">Keywords (automatic)</option>
+                                            <option value="1" selected="@(q.Grading == GradingMethod.Manual)">Manual (creator reviews)</option>
+                                        </select>
+                                    </div>
+                                    <div id="keywords-field-@qIdx" style="@(q.Grading == GradingMethod.Manual ? "display:none" : "")">
+                                        <div class="form-group mb-2">
+                                            <label>Accepted keywords <small class="text-muted">(comma-separated)</small></label>
+                                            <input type="text" name="Questions[@i].Keywords" value="@q.Keywords" class="form-control"
+                                                   placeholder="e.g. Eiffel Tower" />
+                                        </div>
+                                    </div>
+                                }
                             </div>
                         </div>
                     }
                 </div>
-                <button type="button" class="btn btn-secondary" onclick="addQuestion(), hideMessage()">
+
+                <button type="button" class="btn btn-secondary mt-2" onclick="addQuestion(); hideMessage()">
                     Add Question
                 </button>
             </div>
-
-            <div asp-validation-summary="All" class="text-danger mt-2"></div>
         </div>
     </form>
 </div>

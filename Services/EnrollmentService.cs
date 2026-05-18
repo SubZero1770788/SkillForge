@@ -46,6 +46,19 @@ namespace quiz_project.Services
             await enrollmentRepository.UpdateAsync(enrollment);
         }
 
+        public async Task<List<EnrolledCourseViewModel>> GetUserEnrolledCoursesAsync(int userId)
+        {
+            var enrollments = await enrollmentRepository.GetByUserAsync(userId);
+            return enrollments.Select(e => new EnrolledCourseViewModel
+            {
+                CourseId = e.CourseId,
+                Title = e.Course.Title,
+                Description = e.Course.Description,
+                Status = e.Status,
+                EnrolledAt = e.EnrolledAt
+            }).ToList();
+        }
+
         public async Task<EnrollmentListViewModel> GetEnrollmentsAsync(int courseId, string courseTitle)
         {
             var enrollments = await enrollmentRepository.GetByCourseAsync(courseId);

@@ -23,6 +23,7 @@ namespace quiz_project.ViewModels.Mappers
                 IsPublic = quizViewModel.IsPublic,
                 IsRandomized = quizViewModel.IsRandomized,
                 Scope = quizViewModel.Scope,
+                PassPercentage = quizViewModel.PassPercentage,
                 Questions = quizViewModel.Questions.Select((qvm, index) => new Question
                 {
                     QuizId = quizViewModel.QuizId,
@@ -30,6 +31,10 @@ namespace quiz_project.ViewModels.Mappers
                     Index = qvm.Index ?? 0,
                     QuestionScore = qvm.QuestionScore,
                     Description = qvm.Description,
+                    Type = qvm.Type,
+                    Grading = qvm.Grading,
+                    Keywords = qvm.Keywords,
+                    ImagePath = qvm.ImagePath,
                     Answers = qvm.Answers.Select(avm => new Answer
                     {
                         QuestionId = qvm.QuestionId,
@@ -44,8 +49,8 @@ namespace quiz_project.ViewModels.Mappers
         }
 
         public QuizStatisticsModel ToQuizStatisticsModel(Quiz quiz, double averageScores, IEnumerable<QuizAttempt> allQuizAttempts,
-                                QuizAttempt topUserAttempt, List<QuizAttempt> topScores,
-                                Dictionary<int, string> users, Dictionary<(int QuestionId, int AnswerId), int>? answerCounts)
+                                QuizAttempt? topUserAttempt, List<QuizAttempt> topScores,
+                                Dictionary<int, string?> users, Dictionary<(int QuestionId, int AnswerId), int>? answerCounts)
         {
 
             var quizStatisticsModel = new QuizStatisticsModel
@@ -56,11 +61,11 @@ namespace quiz_project.ViewModels.Mappers
                 UsersFinished = allQuizAttempts.DistinctBy(aqa => aqa.UserId).Count(),
                 quizSummaryViewModel = new QuizSummaryViewModel
                 {
-                    Score = topUserAttempt.Score,
+                    Score = topUserAttempt?.Score ?? 0,
                     TotalScore = quiz.TotalScore,
                     TopPlayerScores = topScores.Select(a => new TopScore
                     {
-                        UserName = users[a.UserId] ?? "User not found",
+                        UserName = users.GetValueOrDefault(a.UserId) ?? "User not found",
                         PlayerScore = a.Score
                     }).OrderByDescending(a => a.PlayerScore).ToList(),
 
@@ -83,16 +88,16 @@ namespace quiz_project.ViewModels.Mappers
         }
 
         public QuizSummaryViewModel ToQuizSummaryViewModel(Quiz quiz, List<QuizAttempt> topScores,
-                                Dictionary<int, string> users, QuizAttempt playerScore, QuizAttempt topPlayerScore)
+                                Dictionary<int, string?> users, QuizAttempt? playerScore, QuizAttempt? topPlayerScore)
         {
             QuizSummaryViewModel quizSummaryViewModel = new()
             {
-                Score = playerScore.Score,
+                Score = playerScore?.Score ?? 0,
                 TotalScore = quiz.TotalScore,
-                BestScore = topPlayerScore.Score,
+                BestScore = topPlayerScore?.Score ?? 0,
                 TopPlayerScores = topScores.Select(a => new TopScore
                 {
-                    UserName = users[a.UserId] ?? "User not found",
+                    UserName = users.GetValueOrDefault(a.UserId) ?? "User not found",
                     PlayerScore = a.Score
                 }).OrderByDescending(a => a.PlayerScore).ToList()
             };
@@ -107,6 +112,7 @@ namespace quiz_project.ViewModels.Mappers
                 IsPublic = quiz.IsPublic,
                 IsRandomized = quiz.IsRandomized,
                 Scope = quiz.Scope,
+                PassPercentage = quiz.PassPercentage,
                 QuizId = quiz!.QuizId,
                 Title = quiz.Title,
                 Description = quiz.Description,
@@ -116,6 +122,10 @@ namespace quiz_project.ViewModels.Mappers
                     QuestionId = qvm.QuestionId != 0 ? qvm.QuestionId : 0,
                     QuestionScore = qvm.QuestionScore,
                     Description = qvm.Description,
+                    Type = qvm.Type,
+                    Grading = qvm.Grading,
+                    Keywords = qvm.Keywords,
+                    ImagePath = qvm.ImagePath,
                     Answers = qvm.Answers.Select(avm => new AnswerViewModel
                     {
                         AnswerId = avm.AnswerId,

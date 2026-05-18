@@ -14,6 +14,7 @@ namespace quiz_project.Entities
         public bool IsPublic { get; set; }
         public bool IsRandomized { get; set; }
         public QuizScope Scope { get; set; } = QuizScope.Standalone;
+        public int PassPercentage { get; set; } = 0;
         public List<Question> Questions { get; set; } = new();
         public User User { get; set; }
         public required int UserId { get; set; }

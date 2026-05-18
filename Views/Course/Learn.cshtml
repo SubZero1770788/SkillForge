@@ -1,0 +1,171 @@
+@model quiz_project.ViewModels.CourseLearnViewModel
+@{
+    var resumeChapterId = Context.Request.Query["resumeChapterId"].ToString();
+}
+
+<div class="learn-shell d-flex" style="height: calc(100vh - 120px); overflow: hidden;">
+
+    <!-- Sidebar -->
+    <aside class="learn-sidebar border-end bg-light" style="width: 300px; min-width: 300px; overflow-y: auto; padding: 1rem;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <strong class="text-truncate">@Model.Title</strong>
+            <a asp-action="MyCourses" class="btn btn-sm btn-outline-secondary ms-2" title="Back">&#8592;</a>
+        </div>
+
+        <div id="module-list">
+            @foreach (var module in Model.Modules)
+            {
+                <div class="module-item mb-1" data-module-id="@module.ModuleId">
+                    <div class="module-header d-flex align-items-center justify-content-between px-2 py-2 rounded"
+                         style="cursor: pointer; user-select: none;"
+                         onclick="handleModuleClick(@module.ModuleId, this)">
+                        <span class="module-title fw-semibold">@module.Title</span>
+                        <span class="module-chevron text-muted" style="transition: transform .2s;">&#8250;</span>
+                    </div>
+                    <div class="chapter-list ps-3" id="chapters-@module.ModuleId" style="display: none;">
+                        @foreach (var chapter in module.Chapters)
+                        {
+                            <div class="chapter-item d-flex align-items-center gap-2 px-2 py-1 rounded mb-1"
+                                 style="cursor: pointer;"
+                                 data-chapter-id="@chapter.ChapterId"
+                                 onclick="loadChapter(@chapter.ChapterId, this)">
+                                @if (chapter.IsCompleted)
+                                {
+                                    <span class="text-success" style="font-size:.8rem;">&#10003;</span>
+                                }
+                                else
+                                {
+                                    <span style="width:.8rem; display:inline-block;"></span>
+                                }
+                                <span>@chapter.Title</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </aside>
+
+    <!-- Content panel -->
+    <main class="learn-content flex-grow-1 overflow-y-auto p-4" id="content-panel">
+        <div class="text-center text-muted mt-5">
+            <p>Select a chapter or module from the sidebar.</p>
+        </div>
+    </main>
+</div>
+
+@section Scripts {
+<script>
+    const expandedModules = new Set();
+    let activeChapterEl = null;
+    let activeModuleEl = null;
+
+    function handleModuleClick(moduleId, headerEl) {
+        const moduleItem = headerEl.closest('.module-item');
+        const chapterList = moduleItem.querySelector('.chapter-list');
+        const chevron = headerEl.querySelector('.module-chevron');
+        const isExpanded = expandedModules.has(moduleId);
+
+        if (!isExpanded) {
+            // First click: expand chapters
+            chapterList.style.display = 'block';
+            chevron.style.transform = 'rotate(90deg)';
+            expandedModules.add(moduleId);
+        } else {
+            // Second click: load module content
+            loadModule(moduleId, headerEl);
+        }
+    }
+
+    function collapseModule(moduleId) {
+        const moduleItem = document.querySelector(`[data-module-id="${moduleId}"]`);
+        if (!moduleItem) return;
+        moduleItem.querySelector('.chapter-list').style.display = 'none';
+        moduleItem.querySelector('.module-chevron').style.transform = '';
+        expandedModules.delete(moduleId);
+    }
+
+    function setActiveItem(el, type) {
+        if (activeChapterEl) activeChapterEl.classList.remove('active-item');
+        if (activeModuleEl) activeModuleEl.classList.remove('active-item');
+        el.classList.add('active-item');
+        if (type === 'chapter') activeChapterEl = el;
+        else activeModuleEl = el;
+    }
+
+    async function loadModule(moduleId, headerEl) {
+        setActiveItem(headerEl, 'module');
+        const panel = document.getElementById('content-panel');
+        panel.innerHTML = '<div class="text-muted p-2">Loading...</div>';
+        try {
+            const resp = await fetch(`/Module/Content?moduleId=${moduleId}`);
+            if (!resp.ok) throw new Error();
+            panel.innerHTML = await resp.text();
+        } catch {
+            panel.innerHTML = '<div class="text-danger">Failed to load content.</div>';
+        }
+    }
+
+    async function loadChapter(chapterId, itemEl) {
+        setActiveItem(itemEl, 'chapter');
+        const panel = document.getElementById('content-panel');
+        panel.innerHTML = '<div class="text-muted p-2">Loading...</div>';
+        try {
+            const resp = await fetch(`/Chapter/Content?chapterId=${chapterId}`);
+            if (!resp.ok) throw new Error();
+            panel.innerHTML = await resp.text();
+        } catch {
+            panel.innerHTML = '<div class="text-danger">Failed to load content.</div>';
+        }
+    }
+
+    // Auto-resume if chapterId passed in URL
+    const resumeId = '@resumeChapterId';
+    if (resumeId) {
+        const el = document.querySelector(`[data-chapter-id="${resumeId}"]`);
+        if (el) {
+            // Expand parent module first
+            const moduleItem = el.closest('.module-item');
+            if (moduleItem) {
+                const mid = parseInt(moduleItem.dataset.moduleId);
+                const chapterList = moduleItem.querySelector('.chapter-list');
+                const chevron = moduleItem.querySelector('.module-chevron');
+                chapterList.style.display = 'block';
+                chevron.style.transform = 'rotate(90deg)';
+                expandedModules.add(mid);
+            }
+            loadChapter(parseInt(resumeId), el);
+        }
+    }
+
+    async function completeChapter(chapterId, moduleId, btn) {
+        const form = new FormData();
+        form.append('chapterId', chapterId);
+        form.append('moduleId', moduleId);
+        const token = document.querySelector('input[name="__RequestVerificationToken"]');
+        const headers = {};
+        if (token) headers['RequestVerificationToken'] = token.value;
+
+        const resp = await fetch('/Chapter/Complete', { method: 'POST', headers, body: form });
+        if (resp.ok) {
+            // Reload the chapter content to show updated state
+            loadChapter(chapterId, document.querySelector(`[data-chapter-id="${chapterId}"]`));
+            // Mark check in sidebar
+            const sideItem = document.querySelector(`[data-chapter-id="${chapterId}"]`);
+            if (sideItem) {
+                const dot = sideItem.querySelector('span:first-child');
+                if (dot) { dot.innerHTML = '&#10003;'; dot.className = 'text-success'; dot.style.fontSize = '.8rem'; }
+            }
+        }
+    }
+</script>
+<style>
+    .active-item {
+        background-color: #e7f0ff;
+        border-radius: .375rem;
+    }
+    .module-header:hover { background-color: #f0f0f0; }
+    .chapter-item:hover { background-color: #f0f0f0; }
+    .overflow-y-auto { overflow-y: auto; }
+</style>
+}

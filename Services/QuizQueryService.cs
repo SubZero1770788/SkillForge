@@ -17,8 +17,7 @@ namespace quiz_project.Services
         public async Task<bool> CheckIfPublicAsync(int Id)
         {
             var quiz = await quizRepository.GetQuizByIdAsync(Id);
-            if (quiz.IsPublic) return true;
-            return false;
+            return quiz?.IsPublic ?? false;
         }
 
         public async Task<bool> CheckIfRandomizedAsync(int Id)

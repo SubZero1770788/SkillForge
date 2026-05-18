@@ -1,0 +1,54 @@
+@model List<quiz_project.ViewModels.EnrolledCourseViewModel>
+@using quiz_project.Entities
+
+<div class="form-wrapper">
+    <h1 class="mb-4">My Courses</h1>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            You are not enrolled in any courses yet.
+            <a asp-controller="Menu" asp-action="BrowseCourses" class="alert-link ms-1">Browse courses</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var course in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@course.Title</h5>
+                            <p class="card-text text-muted flex-grow-1">
+                                @(course.Description?.Length > 120
+                                    ? course.Description[..120] + "…"
+                                    : course.Description)
+                            </p>
+                            <div class="mt-2 mb-3">
+                                @if (course.Status == EnrollmentStatus.Approved)
+                                {
+                                    <span class="badge bg-success">Enrolled</span>
+                                }
+                                else if (course.Status == EnrollmentStatus.Pending)
+                                {
+                                    <span class="badge bg-warning text-dark">Pending approval</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Rejected</span>
+                                }
+                                <small class="text-muted ms-2">@course.EnrolledAt.ToString("dd MMM yyyy")</small>
+                            </div>
+                            @if (course.Status == EnrollmentStatus.Approved)
+                            {
+                                <a asp-action="Dashboard" asp-route-courseId="@course.CourseId"
+                                   class="btn btn-primary btn-sm">Open course</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

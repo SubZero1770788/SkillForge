@@ -25,6 +25,8 @@ namespace quiz_project.Controllers
     public class CourseController(ICourseQueryService courseQueryService, ICourseService courseService,
     IAccessValidationService accessValidationService, IEnrollmentService enrollmentService,
     ICourseRepository courseRepository, IModuleRepository moduleRepository,
+    IProgressRepository progressRepository, IAttemptRepository attemptRepository,
+    IQuizRepository quizRepository,
     UserManager<User> userManager) : Controller
     {
         [HttpGet]
@@ -36,6 +38,157 @@ namespace quiz_project.Controllers
             var courseViewModels = await courseQueryService.GetUserCoursesAsync(user.Id);
 
             return View(courseViewModels);
+        }
+
+        [HttpGet, ActionName("MyCourses")]
+        public async Task<IActionResult> MyCoursesAsync()
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+
+            var courses = await enrollmentService.GetUserEnrolledCoursesAsync(user.Id);
+            return View(courses);
+        }
+
+        [HttpGet, ActionName("Dashboard")]
+        public async Task<IActionResult> DashboardAsync(int courseId)
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+
+            if (!User.IsInRole("Admin") && !User.IsInRole("Creator"))
+            {
+                var status = await enrollmentService.GetStatusAsync(courseId, user.Id);
+                if (status != EnrollmentStatus.Approved)
+                    return RedirectToAction("Details", new { courseId });
+            }
+
+            var course = await courseRepository.GetCourseByIdAsync(courseId);
+            if (course is null) return RedirectToAction("MyCourses");
+
+            var modules = (await moduleRepository.GetModulesByCourseIdAsync(courseId))
+                .OrderBy(m => m.Order).ToList();
+
+            var allChapters = modules
+                .SelectMany(m => m.Chapters.OrderBy(c => c.Order)
+                    .Select(c => new { c.ChapterId, c.Title, c.QuizId, ModuleTitle = m.Title, ModuleQuizId = m.QuizId }))
+                .ToList();
+
+            var completedIds = (await progressRepository.GetAllChapterProgressesForCourseAsync(courseId))
+                .Where(p => p.UserId == user.Id)
+                .Select(p => p.ChapterId)
+                .ToHashSet();
+
+            var totalChapters = allChapters.Count;
+            var completedChapters = allChapters.Count(c => completedIds.Contains(c.ChapterId));
+
+            var firstUncompleted = allChapters.FirstOrDefault(c => !completedIds.Contains(c.ChapterId));
+
+            // Collect all quiz IDs in the course
+            var chapterQuizIds = allChapters.Where(c => c.QuizId.HasValue).Select(c => c.QuizId!.Value);
+            var moduleQuizIds = modules.Where(m => m.QuizId.HasValue).Select(m => m.QuizId!.Value);
+            var allQuizIds = chapterQuizIds.Concat(moduleQuizIds).Distinct().ToList();
+
+            var attempts = await attemptRepository.GetBestUserAttemptsForQuizzesAsync(user.Id, allQuizIds);
+            var attemptMap = attempts.ToDictionary(a => a.QuizId);
+
+            // Load quiz definitions so we always have title/score regardless of attempt status
+            var quizDefs = await quizRepository.GetQuizzesByIdsAsync(allQuizIds);
+
+            var quizResults = new List<CourseQuizResult>();
+            foreach (var ch in allChapters.Where(c => c.QuizId.HasValue))
+            {
+                var qid = ch.QuizId!.Value;
+                var attempted = attemptMap.TryGetValue(qid, out var att);
+                quizDefs.TryGetValue(qid, out var quizDef);
+                quizResults.Add(new CourseQuizResult
+                {
+                    QuizId = qid,
+                    QuizTitle = ch.Title,                   // always use chapter name
+                    Context = quizDef?.Title ?? $"Quiz #{qid}",
+                    BestScore = attempted ? att!.Score : 0,
+                    TotalScore = quizDef?.TotalScore ?? att?.Quiz.TotalScore ?? 0,
+                    PassPercentage = quizDef?.PassPercentage ?? att?.Quiz.PassPercentage ?? 0,
+                    Attempted = attempted
+                });
+            }
+            foreach (var m in modules.Where(m => m.QuizId.HasValue))
+            {
+                var qid = m.QuizId!.Value;
+                var attempted = attemptMap.TryGetValue(qid, out var att);
+                quizDefs.TryGetValue(qid, out var quizDef);
+                quizResults.Add(new CourseQuizResult
+                {
+                    QuizId = qid,
+                    QuizTitle = m.Title,                    // always use module name
+                    Context = quizDef?.Title ?? $"Quiz #{qid}",
+                    BestScore = attempted ? att!.Score : 0,
+                    TotalScore = quizDef?.TotalScore ?? att?.Quiz.TotalScore ?? 0,
+                    PassPercentage = quizDef?.PassPercentage ?? att?.Quiz.PassPercentage ?? 0,
+                    Attempted = attempted
+                });
+            }
+
+            var vm = new CourseDashboardViewModel
+            {
+                CourseId = courseId,
+                Title = course.Title,
+                TotalChapters = totalChapters,
+                CompletedChapters = completedChapters,
+                ResumeChapterId = firstUncompleted?.ChapterId,
+                ResumeChapterTitle = firstUncompleted?.Title,
+                QuizResults = quizResults
+            };
+
+            return View(vm);
+        }
+
+        [HttpGet, ActionName("Learn")]
+        public async Task<IActionResult> LearnAsync(int courseId)
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+
+            if (!User.IsInRole("Admin") && !User.IsInRole("Creator"))
+            {
+                var status = await enrollmentService.GetStatusAsync(courseId, user.Id);
+                if (status != EnrollmentStatus.Approved)
+                    return RedirectToAction("Details", new { courseId });
+            }
+
+            var course = await courseRepository.GetCourseByIdAsync(courseId);
+            if (course is null) return RedirectToAction("MyCourses");
+
+            var modules = (await moduleRepository.GetModulesByCourseIdAsync(courseId))
+                .OrderBy(m => m.Order)
+                .ToList();
+
+            var chapterProgresses = await progressRepository.GetAllChapterProgressesForCourseAsync(courseId);
+            var completedChapterIds = chapterProgresses
+                .Where(p => p.UserId == user.Id)
+                .Select(p => p.ChapterId)
+                .ToHashSet();
+
+            var vm = new CourseLearnViewModel
+            {
+                CourseId = courseId,
+                Title = course.Title,
+                Modules = modules.Select(m => new ModuleLearnItem
+                {
+                    ModuleId = m.ModuleId,
+                    Title = m.Title,
+                    Order = m.Order,
+                    Chapters = m.Chapters.OrderBy(c => c.Order).Select(c => new ChapterLearnItem
+                    {
+                        ChapterId = c.ChapterId,
+                        Title = c.Title,
+                        Order = c.Order,
+                        IsCompleted = completedChapterIds.Contains(c.ChapterId)
+                    }).ToList()
+                }).ToList()
+            };
+
+            return View(vm);
         }
 
         // [HttpGet]

@@ -40,5 +40,24 @@ namespace quiz_project.Infrastructure.Repositories
             context.Chapters.Remove(existing);
             await context.SaveChangesAsync();
         }
+
+        public async Task<bool> UserHasEnrolledCourseWithQuizAsync(int userId, int quizId)
+        {
+            var fromChapter = await context.Chapters
+                .AnyAsync(c => c.QuizId == quizId &&
+                    context.CourseEnrollments.Any(e =>
+                        e.UserId == userId &&
+                        e.Status == EnrollmentStatus.Approved &&
+                        e.Course.Modules.Any(m => m.Chapters.Any(ch => ch.ChapterId == c.ChapterId))));
+
+            if (fromChapter) return true;
+
+            return await context.Modules
+                .AnyAsync(m => m.QuizId == quizId &&
+                    context.CourseEnrollments.Any(e =>
+                        e.UserId == userId &&
+                        e.Status == EnrollmentStatus.Approved &&
+                        e.CourseId == m.CourseId));
+        }
     }
 }

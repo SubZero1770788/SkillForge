@@ -40,11 +40,12 @@ namespace quiz_project.Entities.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task<Quiz> GetQuizByIdAsync(int quizId)
+        public async Task<Quiz?> GetQuizByIdAsync(int quizId)
         {
-            var quiz = await context.Quizzes.Where(q => q.QuizId == quizId)
-                                        .Include(q => q.Questions).ThenInclude(q => q.Answers).FirstAsync();
-            return quiz;
+            return await context.Quizzes
+                .Where(q => q.QuizId == quizId)
+                .Include(q => q.Questions).ThenInclude(q => q.Answers)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<List<Question>> GetQuestionsByQuizId(int quizId)
@@ -211,6 +212,14 @@ namespace quiz_project.Entities.Repositories
             if (quiz is null) return;
             quiz.Scope = scope;
             await context.SaveChangesAsync();
+        }
+
+        public async Task<Dictionary<int, Quiz>> GetQuizzesByIdsAsync(IEnumerable<int> quizIds)
+        {
+            var ids = quizIds.ToList();
+            return await context.Quizzes
+                .Where(q => ids.Contains(q.QuizId))
+                .ToDictionaryAsync(q => q.QuizId);
         }
     }
 }

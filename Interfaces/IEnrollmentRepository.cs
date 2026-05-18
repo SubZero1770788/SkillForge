@@ -6,6 +6,7 @@ namespace quiz_project.Interfaces
     {
         Task<CourseEnrollment?> GetAsync(int courseId, int userId);
         Task<List<CourseEnrollment>> GetByCourseAsync(int courseId);
+        Task<List<CourseEnrollment>> GetByUserAsync(int userId);
         Task<CourseEnrollment?> GetByIdAsync(int enrollmentId);
         Task CreateAsync(CourseEnrollment enrollment);
         Task UpdateAsync(CourseEnrollment enrollment);

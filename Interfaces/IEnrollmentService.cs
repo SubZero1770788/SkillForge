@@ -10,5 +10,6 @@ namespace quiz_project.Interfaces
         Task ApproveAsync(int enrollmentId);
         Task RejectAsync(int enrollmentId);
         Task<EnrollmentListViewModel> GetEnrollmentsAsync(int courseId, string courseTitle);
+        Task<List<EnrolledCourseViewModel>> GetUserEnrolledCoursesAsync(int userId);
     }
 }

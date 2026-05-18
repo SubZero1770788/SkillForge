@@ -1,0 +1,113 @@
+@model quiz_project.ViewModels.CourseDashboardViewModel
+
+<div class="form-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>@Model.Title</h1>
+        <a asp-action="MyCourses" class="btn btn-outline-secondary">Back to my courses</a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Progress card -->
+        <div class="col-md-5">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Course progress</h5>
+                    <div class="mb-2 d-flex justify-content-between">
+                        <span>@Model.CompletedChapters / @Model.TotalChapters chapters completed</span>
+                        <strong>@Model.CompletionPercent%</strong>
+                    </div>
+                    <div class="progress mb-4" style="height: 12px;">
+                        <div class="progress-bar bg-success" style="width: @Model.CompletionPercent%"></div>
+                    </div>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a asp-action="Learn" asp-route-courseId="@Model.CourseId"
+                           class="btn btn-primary">Open course</a>
+
+                        @if (Model.ResumeChapterId.HasValue)
+                        {
+                            <a asp-action="Learn" asp-route-courseId="@Model.CourseId"
+                               asp-route-resumeChapterId="@Model.ResumeChapterId"
+                               class="btn btn-outline-primary">
+                                Resume: @Model.ResumeChapterTitle
+                            </a>
+                        }
+                        else if (Model.TotalChapters > 0)
+                        {
+                            <span class="badge bg-success align-self-center fs-6">Course completed!</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz results card -->
+        <div class="col-md-7">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Quiz results</h5>
+                    @if (!Model.QuizResults.Any())
+                    {
+                        <p class="text-muted">No quizzes in this course.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Chapter / Module</th>
+                                        <th>Quiz title</th>
+                                        <th>Best score</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var r in Model.QuizResults)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <a asp-controller="QuizGame" asp-action="Index"
+                                                   asp-route-quizId="@r.QuizId">@r.QuizTitle</a>
+                                            </td>
+                                            <td><small class="text-muted">@r.Context</small></td>
+                                            <td>
+                                                @if (r.Attempted)
+                                                {
+                                                    <span>@r.BestScore / @r.TotalScore</span>
+                                                    <small class="text-muted ms-1">(@r.BestPercent%)</small>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">—</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!r.Attempted)
+                                                {
+                                                    <span class="badge bg-secondary">Not attempted</span>
+                                                }
+                                                else if (r.PassPercentage == 0)
+                                                {
+                                                    <span class="badge bg-info text-dark">Completed</span>
+                                                }
+                                                else if (r.Passed)
+                                                {
+                                                    <span class="badge bg-success">Passed (@r.PassPercentage%)</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">Failed (@r.BestPercent% / @r.PassPercentage%)</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -12,11 +12,12 @@ namespace quiz_project.Interfaces
         Task<IEnumerable<Quiz>> GetQuizesAsync();
         Task<IEnumerable<Quiz>> GetQuizesByUserAsync(int userId);
         Task<IEnumerable<Quiz>> GetPublicQuizzes();
-        Task<Quiz> GetQuizByIdAsync(int quizId);
+        Task<Quiz?> GetQuizByIdAsync(int quizId);
         Task DeleteQuizAsync(Quiz quiz);
         Task UpdateQuizAsync(Quiz quiz);
         Task CreateQuizAsync(Quiz quiz);
         Task<List<Question>> GetQuestionsByQuizId(int quizId);
+        Task<Dictionary<int, Quiz>> GetQuizzesByIdsAsync(IEnumerable<int> quizIds);
         Task<Dictionary<(int QuestionId, int AnswerId), int>> GetAnswerSelectionStatsAsync(int quizId);
         Task UpdateQuizScopeAsync(int quizId, QuizScope scope);
     }

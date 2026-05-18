@@ -18,6 +18,7 @@ namespace quiz_project.Entities
         public int Score { get; set; }
 
         public List<AnswerSelection> AnswerSelections { get; set; } = new();
+        public List<OpenAnswerRecord> OpenAnswerRecords { get; set; } = new();
     }
 
 }

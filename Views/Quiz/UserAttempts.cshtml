@@ -1,0 +1,57 @@
+@model quiz_project.ViewModels.UserAttemptsViewModel
+
+<div class="stats-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Attempts — <strong>@Model.UserName</strong></h3>
+        <a asp-controller="Course" asp-action="Statistics" asp-route-Id="@Model.CourseId"
+           class="btn btn-danger text-white">Return</a>
+    </div>
+
+    @if (!Model.Attempts.Any())
+    {
+        <div class="alert alert-info">This user hasn't attempted any quiz in this course yet.</div>
+    }
+    else
+    {
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Quiz</th>
+                    <th>Context</th>
+                    <th>Score</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var a in Model.Attempts)
+                {
+                    <tr>
+                        <td><strong>@a.QuizTitle</strong></td>
+                        <td><small class="text-muted">@a.Context</small></td>
+                        <td>
+                            @a.Score / @a.TotalScore
+                            <small class="text-muted ms-1">(@a.ScorePercent%)</small>
+                        </td>
+                        <td>
+                            @if (a.HasPendingGrading)
+                            {
+                                <span class="badge bg-warning text-dark">Pending grading</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Graded</span>
+                            }
+                        </td>
+                        <td>
+                            <a asp-action="AttemptDetail"
+                               asp-route-attemptId="@a.AttemptId"
+                               asp-route-courseId="@Model.CourseId"
+                               class="btn btn-sm btn-outline-primary">View answers</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

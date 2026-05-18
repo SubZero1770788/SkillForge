@@ -5,6 +5,7 @@ namespace quiz_project.ViewModels
         public int CourseId { get; set; }
         public string Title { get; set; }
         public int TotalUsers { get; set; }
+        public List<EnrolledUserItem> EnrolledUsers { get; set; } = new();
         public List<ModuleStatsViewModel> Modules { get; set; } = new();
     }
 

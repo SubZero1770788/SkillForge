@@ -45,6 +45,7 @@
 
             <div class="form-group mb-3">
                 <label asp-for="QuizId">Linked quiz (optional)</label>
+                @* RequireQuizPass shown below after quiz selection *@
                 <select asp-for="QuizId" class="form-select">
                     <option value="">— none —</option>
                     @if (ViewBag.AvailableQuizzes != null)
@@ -59,6 +60,15 @@
                 </select>
             </div>
 
+            <div class="form-group mb-3" id="quiz-settings" style="@(Model.QuizId.HasValue ? "" : "display:none;")">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" asp-for="RequireQuizPass" />
+                    <label class="form-check-label" asp-for="RequireQuizPass">
+                        Require passing the quiz to unlock next chapter
+                    </label>
+                </div>
+            </div>
+
             <div asp-validation-summary="All" class="text-danger mb-2"></div>
             <button type="submit" class="btn btn-primary">Save changes</button>
         </div>
@@ -67,4 +77,9 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('QuizId').addEventListener('change', function () {
+            document.getElementById('quiz-settings').style.display = this.value ? '' : 'none';
+        });
+    </script>
 }

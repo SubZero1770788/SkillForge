@@ -1,0 +1,60 @@
+@model quiz_project.ViewModels.GradeAttemptViewModel
+
+<div class="container mt-4">
+    <h2>Grade Attempt</h2>
+    <p class="text-muted">
+        Quiz: <strong>@Model.QuizTitle</strong> &nbsp;|&nbsp;
+        User: <strong>@Model.UserName</strong> &nbsp;|&nbsp;
+        Current score: <strong>@Model.CurrentScore</strong>
+    </p>
+
+    <form asp-action="GradeAttempt" method="post">
+        <input type="hidden" name="attemptId" value="@Model.AttemptId" />
+
+        @for (int i = 0; i < Model.Answers.Count; i++)
+        {
+            var a = Model.Answers[i];
+            <input type="hidden" name="recordIds" value="@a.OpenAnswerRecordId" />
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">@a.QuestionDescription
+                        <small class="text-muted ms-2">(max @a.MaxScore pts)</small>
+                    </h5>
+
+                    @if (!string.IsNullOrEmpty(a.ImagePath))
+                    {
+                        <div class="mb-2">
+                            <img src="/Quiz/QuestionImage?path=@Uri.EscapeDataString(a.ImagePath)"
+                                 class="img-fluid rounded"
+                                 style="max-height:250px;"
+                                 alt="Question image" />
+                        </div>
+                    }
+
+                    <div class="alert alert-light border mb-3">
+                        <strong>Student answer:</strong><br />
+                        @a.OpenText
+                    </div>
+
+                    @if (a.IsGraded)
+                    {
+                        <div class="text-success mb-2"><i class="bi bi-check-circle"></i> Already graded: @a.ManualScore pts</div>
+                    }
+
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="mb-0">Score (0–@a.MaxScore):</label>
+                        <input type="number" name="scores" min="0" max="@a.MaxScore"
+                               value="@(a.ManualScore ?? 0)"
+                               class="form-control" style="width:100px;" />
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="d-flex gap-2 mb-5">
+            <button type="submit" class="btn btn-primary">Save grades</button>
+            <a asp-action="PendingGrading" class="btn btn-secondary">Back</a>
+        </div>
+    </form>
+</div>

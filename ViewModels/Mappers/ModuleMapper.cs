@@ -16,7 +16,8 @@ namespace quiz_project.ViewModels.Mappers
                 Description = viewModel.Description,
                 Order = viewModel.Order,
                 RoadmapFilePath = viewModel.RoadmapFilePath,
-                QuizId = viewModel.QuizId
+                QuizId = viewModel.QuizId,
+                RequireQuizPass = viewModel.RequireQuizPass
             };
         }
 
@@ -31,6 +32,7 @@ namespace quiz_project.ViewModels.Mappers
                 Order = module.Order,
                 RoadmapFilePath = module.RoadmapFilePath,
                 QuizId = module.QuizId,
+                RequireQuizPass = module.RequireQuizPass,
                 Chapters = module.Chapters.Select(c => new ChapterViewModel
                 {
                     ChapterId = c.ChapterId,

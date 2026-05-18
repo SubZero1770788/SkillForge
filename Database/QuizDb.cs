@@ -210,6 +210,21 @@ namespace quiz_project.Database
                     );
             });
 
+            mb.Entity<OpenAnswerRecord>(oa =>
+            {
+                oa.HasKey(oa => oa.Id);
+
+                oa.HasOne(oa => oa.Question)
+                    .WithMany()
+                    .HasForeignKey(oa => oa.QuestionId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                oa.HasOne(oa => oa.QuizAttempt)
+                    .WithMany(qa => qa.OpenAnswerRecords)
+                    .HasForeignKey(oa => oa.QuizAttemptId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
             base.OnModelCreating(mb);
             mb.ApplyConfiguration(new RoleConfiguration());
         }
@@ -228,5 +243,6 @@ namespace quiz_project.Database
         public DbSet<OnGoingQuizState> OnGoingQuizStates { get; set; }
         public DbSet<AnswerState> AnswerStates { get; set; }
         public DbSet<CourseEnrollment> CourseEnrollments { get; set; }
+        public DbSet<OpenAnswerRecord> OpenAnswerRecords { get; set; }
     }
 }

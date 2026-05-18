@@ -1,28 +1,60 @@
 @model quiz_project.ViewModels.QuizSummaryViewModel
 
-<h3>Congratulations on finishing the quiz</h3>
+<div class="container mt-4" style="max-width: 640px;">
+    <h3>Congratulations on finishing the quiz!</h3>
 
-<div class="container">
-    <div class="row">Here's your latest score:</div>
-    <div>
-        @Model.Score / @Model.TotalScore
-    </div>
-    <div class="row">And here's your best score:</div>
-    <div>
-        @Model.BestScore / @Model.TotalScore
-    </div>
-</div>
+    @if (Model.PendingManualGrading > 0)
+    {
+        <div class="alert alert-info mt-3">
+            <strong>@Model.PendingManualGrading answer@(Model.PendingManualGrading == 1 ? "" : "s") pending manual review.</strong>
+            Your score may increase once the creator grades your open answers.
+        </div>
+    }
 
-<div class="container">
-    <h4>Leaderboard</h4>
-    <div class="row">
-        @for (int i = 0; i < @Model.TopPlayerScores.Count(); i++)
-        {
-            var playerScore = @Model.TopPlayerScores[i];
-
-            <div id="score-@i">
-                @playerScore.UserName | score @playerScore.PlayerScore
+    <div class="card mt-3">
+        <div class="card-body">
+            <div class="mb-2">
+                <span class="text-muted">Latest score:</span>
+                <strong class="ms-2">@Model.Score / @Model.TotalScore</strong>
+                @{
+                    var pct = Model.TotalScore > 0 ? Math.Round((double)Model.Score / Model.TotalScore * 100, 1) : 0;
+                }
+                <small class="text-muted ms-1">(@pct%)</small>
             </div>
-        }
+            <div>
+                <span class="text-muted">Best score:</span>
+                <strong class="ms-2">@Model.BestScore / @Model.TotalScore</strong>
+                @{
+                    var bestPct = Model.TotalScore > 0 ? Math.Round((double)Model.BestScore / Model.TotalScore * 100, 1) : 0;
+                }
+                <small class="text-muted ms-1">(@bestPct%)</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Leaderboard</h5>
+            @if (!Model.TopPlayerScores.Any())
+            {
+                <p class="text-muted">No scores yet.</p>
+            }
+            else
+            {
+                <ol class="list-group list-group-numbered list-group-flush">
+                    @foreach (var s in Model.TopPlayerScores)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            @s.UserName
+                            <span class="badge bg-primary rounded-pill">@s.PlayerScore pts</span>
+                        </li>
+                    }
+                </ol>
+            }
+        </div>
+    </div>
+
+    <div class="mt-3 mb-5">
+        <a asp-controller="Course" asp-action="MyCourses" class="btn btn-outline-secondary">Back to courses</a>
     </div>
 </div>

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using quiz_project.Entities;
+using quiz_project.Entities.Definition;
 using quiz_project.Interfaces;
 using quiz_project.ViewModels;
 
@@ -8,6 +9,7 @@ namespace quiz_project.Services
     public class CourseQueryService(ICourseRepository courseRepository, ICourseMapper courseMapper,
         IModuleRepository moduleRepository, IChapterRepository chapterRepository,
         IProgressRepository progressRepository, IQuizRepository quizRepository,
+        IEnrollmentRepository enrollmentRepository,
         UserManager<User> userManager) : ICourseQueryService
     {
         public async Task<bool> CheckIfPublicAsync(int Id)
@@ -99,11 +101,23 @@ namespace quiz_project.Services
                 };
             }).ToList();
 
+            // Enrolled + approved users list
+            var enrollments = await enrollmentRepository.GetByCourseAsync(courseId);
+            var enrolledUsers = enrollments
+                .Where(e => e.Status == EnrollmentStatus.Approved)
+                .Select(e => new EnrolledUserItem
+                {
+                    UserId = e.UserId,
+                    UserName = e.User?.UserName ?? $"User #{e.UserId}"
+                })
+                .ToList();
+
             return new CourseStatisticsViewModel
             {
                 CourseId = courseId,
                 Title = course.Title,
                 TotalUsers = totalUsers,
+                EnrolledUsers = enrolledUsers,
                 Modules = moduleStats
             };
         }

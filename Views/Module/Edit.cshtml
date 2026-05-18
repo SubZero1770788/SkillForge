@@ -9,7 +9,7 @@
 
     <div class="row">
         <div class="col-md-5">
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">
                 <input type="hidden" asp-for="ModuleId" />
                 <input type="hidden" asp-for="CourseId" />
 
@@ -26,6 +26,22 @@
                 </div>
 
                 <div class="form-group mb-3">
+                    <label for="file">Attachment (PDF or 7z, optional)</label>
+                    @if (!string.IsNullOrEmpty(Model.RoadmapFilePath))
+                    {
+                        <div class="mb-1">
+                            <a asp-action="Download" asp-route-moduleId="@Model.ModuleId"
+                               class="btn btn-outline-secondary btn-sm" target="_blank">
+                                Current file — download
+                            </a>
+                            <small class="text-muted ms-2">Upload a new file to replace it.</small>
+                        </div>
+                    }
+                    <input type="file" id="file" name="file" class="form-control"
+                           accept=".pdf,.7z,.zip" />
+                </div>
+
+                <div class="form-group mb-3">
                     <label asp-for="QuizId">Module quiz (optional)</label>
                     <select asp-for="QuizId" class="form-select">
                         <option value="">— none —</option>
@@ -39,6 +55,15 @@
                             }
                         }
                     </select>
+                </div>
+
+                <div class="form-group mb-3" id="quiz-settings" style="@(Model.QuizId.HasValue ? "" : "display:none;")">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" asp-for="RequireQuizPass" />
+                        <label class="form-check-label" asp-for="RequireQuizPass">
+                            Require passing the quiz to unlock next module
+                        </label>
+                    </div>
                 </div>
 
                 <div asp-validation-summary="All" class="text-danger mb-2"></div>
@@ -103,6 +128,11 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('QuizId').addEventListener('change', function () {
+            document.getElementById('quiz-settings').style.display = this.value ? '' : 'none';
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script>
         const list = document.getElementById('chapter-list');

@@ -11,5 +11,6 @@ namespace quiz_project.Entities
         public string? FilePath { get; set; }
         public Quiz? Quiz { get; set; }
         public int? QuizId { get; set; }
+        public bool RequireQuizPass { get; set; } = false;
     }
 }

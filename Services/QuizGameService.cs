@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -25,25 +24,24 @@ namespace quiz_project.Services
     {
         public async Task<(bool, QuizSummaryViewModel?)> AttemptSummary(int quizId, User user)
         {
-            var quizMetaData = await onGoingQuizRepository.GetAsync(user.Id, quizId);
-            var userRole = await userManager.GetRolesAsync(user);
-
-            if (!await quizQueryService.CheckIfPublicAsync(quizId) && !userRole.Contains("Admin"))
-            {
-                var owns = await accessValidationService.UserOwnsQuizAsync(quizId, user);
-                if (!owns) return (false, null);
-            }
+            var quizDefinition = await quizRepository.GetQuizByIdAsync(quizId);
+            if (quizDefinition is null) return (false, null);
 
             var allQuizAttempts = await attemptRepository.GetAllAttemptsAsync(quizId);
-            var quizDefinition = await quizRepository.GetQuizByIdAsync(quizId);
 
-            var latestplayerScore = await attemptRepository.GetLatestUserAttemptAsync(user.Id);
+            var latestAttempt = await attemptRepository.GetLatestUserAttemptAsync(user.Id, quizId);
+            if (latestAttempt is null) return (false, null);
+
             var bestPlayerScore = await attemptRepository.GetTopUserAttemptAsync(user.Id, quizId);
 
             var topScores = allQuizAttempts.OrderByDescending(aqa => aqa.Score).Take(10).ToList();
             var users = await userManager.Users.ToDictionaryAsync(u => u.Id, u => u.UserName);
 
-            var quizSummaryViewModel = quizMapper.ToQuizSummaryViewModel(quizDefinition, topScores, users, latestplayerScore, bestPlayerScore);
+            // Count pending manual grading for this attempt
+            var pendingGrading = latestAttempt.OpenAnswerRecords?.Count(r => !r.IsGraded) ?? 0;
+
+            var quizSummaryViewModel = quizMapper.ToQuizSummaryViewModel(quizDefinition, topScores, users, latestAttempt, bestPlayerScore);
+            quizSummaryViewModel.PendingManualGrading = pendingGrading;
 
             return (true, quizSummaryViewModel);
         }
@@ -165,6 +163,7 @@ namespace quiz_project.Services
                 {
                     QuestionId = q.QuestionId,
                     AnswersId = q.SelectedAnswerIds ?? new List<int>(),
+                    OpenText = q.OpenText,
                     OnGoingQuizStateId = quizMetaData.Id
                 })
                 .ToList();
@@ -177,6 +176,7 @@ namespace quiz_project.Services
                 if (existing != null)
                 {
                     existing.AnswersId = answer.AnswersId;
+                    existing.OpenText = answer.OpenText;
                 }
                 else
                 {
@@ -191,6 +191,8 @@ namespace quiz_project.Services
             OnGoingQuizState quizMetaData,
             List<Question> questions)
         {
+            var questionById = questions.ToDictionary(q => q.QuestionId);
+
             var correctAnswersByQuestion = questions.ToDictionary(
                 q => q.QuestionId,
                 q => q.Answers
@@ -200,43 +202,107 @@ namespace quiz_project.Services
                     .ToList()
             );
 
-            var questionScoreById = questions.ToDictionary(
-                q => q.QuestionId,
-                q => q.QuestionScore
-            );
+            var answerSelections = new List<AnswerSelection>();
+            var openAnswerRecords = new List<OpenAnswerRecord>();
+            int userScore = 0;
 
-            int userScore = quizMetaData.Answers.Sum(userAnswer =>
+            foreach (var userAnswer in quizMetaData.Answers)
             {
-                if (!correctAnswersByQuestion.TryGetValue(userAnswer.QuestionId, out var correctAnswerIds))
-                    return 0;
+                if (!questionById.TryGetValue(userAnswer.QuestionId, out var question))
+                    continue;
 
-                var userAnswerIds = userAnswer.AnswersId
-                    .OrderBy(id => id)
-                    .ToList();
+                switch (question.Type)
+                {
+                    case QuestionType.MultipleChoice:
+                    case QuestionType.SingleChoice:
+                    {
+                        var correctIds = correctAnswersByQuestion[question.QuestionId];
+                        var chosenIds = userAnswer.AnswersId.OrderBy(id => id).ToList();
 
-                return correctAnswerIds.SequenceEqual(userAnswerIds)
-                    ? questionScoreById[userAnswer.QuestionId]
-                    : 0;
-            });
+                        if (correctIds.SequenceEqual(chosenIds))
+                            userScore += question.QuestionScore;
+
+                        answerSelections.AddRange(chosenIds.Select(answerId => new AnswerSelection
+                        {
+                            QuestionId = question.QuestionId,
+                            AnswerId = answerId,
+                            IsCorrect = correctIds.Contains(answerId)
+                        }));
+                        break;
+                    }
+
+                    case QuestionType.FillInTheBlank:
+                    {
+                        var text = (userAnswer.OpenText ?? "").Trim();
+                        var keywords = ParseKeywords(question.Keywords);
+                        var matched = keywords.Any(k => string.Equals(k, text, StringComparison.OrdinalIgnoreCase));
+
+                        if (matched) userScore += question.QuestionScore;
+
+                        openAnswerRecords.Add(new OpenAnswerRecord
+                        {
+                            QuestionId = question.QuestionId,
+                            OpenText = text,
+                            IsGraded = true,
+                            ManualScore = matched ? question.QuestionScore : 0
+                        });
+                        break;
+                    }
+
+                    case QuestionType.OpenWithImage:
+                    {
+                        var text = (userAnswer.OpenText ?? "").Trim();
+
+                        if (question.Grading == GradingMethod.Keywords)
+                        {
+                            var keywords = ParseKeywords(question.Keywords);
+                            var matched = keywords.Any(k => string.Equals(k, text, StringComparison.OrdinalIgnoreCase));
+                            if (matched) userScore += question.QuestionScore;
+
+                            openAnswerRecords.Add(new OpenAnswerRecord
+                            {
+                                QuestionId = question.QuestionId,
+                                OpenText = text,
+                                IsGraded = true,
+                                ManualScore = matched ? question.QuestionScore : 0
+                            });
+                        }
+                        else // Manual
+                        {
+                            // Score will be assigned later by the creator
+                            openAnswerRecords.Add(new OpenAnswerRecord
+                            {
+                                QuestionId = question.QuestionId,
+                                OpenText = text,
+                                IsGraded = false,
+                                ManualScore = null
+                            });
+                        }
+                        break;
+                    }
+                }
+            }
 
             var attempt = new QuizAttempt
             {
                 UserId = userId,
                 QuizId = quizId,
                 Score = userScore,
-                AnswerSelections = quizMetaData.Answers
-                    .SelectMany(ua => ua.AnswersId.Select(answerId => new AnswerSelection
-                    {
-                        QuestionId = ua.QuestionId,
-                        AnswerId = answerId,
-                        IsCorrect = correctAnswersByQuestion.TryGetValue(ua.QuestionId, out var correctIds)
-                                    && correctIds.Contains(answerId)
-                    }))
-                    .ToList()
+                AnswerSelections = answerSelections,
+                OpenAnswerRecords = openAnswerRecords
             };
 
             await onGoingQuizRepository.DeleteAsync(userId, quizId);
             await attemptRepository.CreateAsync(attempt);
+        }
+
+        private static List<string> ParseKeywords(string? keywords)
+        {
+            if (string.IsNullOrWhiteSpace(keywords)) return new List<string>();
+            return keywords.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                           .Select(k => k.Trim())
+                           .Where(k => k.Length > 0)
+                           .ToList();
         }
 
         private static GameViewModel ToGameViewModel(
@@ -254,6 +320,9 @@ namespace quiz_project.Services
                     QuestionId = question.QuestionId,
                     Description = question.Description,
                     QuestionScore = question.QuestionScore,
+                    Type = question.Type,
+                    Grading = question.Grading,
+                    ImagePath = question.ImagePath,
                     Answers = question.Answers.Select(ans => new AnswerViewModel
                     {
                         AnswerId = ans.AnswerId,

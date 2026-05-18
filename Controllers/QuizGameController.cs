@@ -10,7 +10,8 @@ namespace quiz_project.Controllers
         IAccessValidationService accessValidationService,
         UserManager<User> userManager,
         IQuizGameService quizGameService,
-        IQuizQueryService quizQueryService) : Controller
+        IQuizQueryService quizQueryService,
+        IChapterRepository chapterRepository) : Controller
     {
         [HttpGet]
         public async Task<IActionResult> Index(int QuizId)
@@ -69,23 +70,31 @@ namespace quiz_project.Controllers
             var user = await userManager.GetUserAsync(User);
             if (user is null) return RedirectToAction("Register", "User")!;
 
+            // Verify the user can access this quiz (same check as during play)
+            if (!await CanUserAccessQuizAsync(quizId, user))
+                return RedirectToAction("MyCourses", "Course");
+
             var (success, quizSummaryViewModel) = await quizGameService.AttemptSummary(quizId, user);
 
             if (!success)
-                return RedirectToAction("Index");
+                return RedirectToAction("MyCourses", "Course");
 
             return View(quizSummaryViewModel);
         }
 
         private async Task<bool> CanUserAccessQuizAsync(int quizId, User user)
         {
-            if (await quizQueryService.CheckIfPublicAsync(quizId))
-                return true;
-
             if (User.IsInRole("Admin"))
                 return true;
 
-            return await accessValidationService.UserOwnsQuizAsync(quizId, user);
+            if (await quizQueryService.CheckIfPublicAsync(quizId))
+                return true;
+
+            if (await accessValidationService.UserOwnsQuizAsync(quizId, user))
+                return true;
+
+            // Enrolled users can access quizzes attached to their courses
+            return await chapterRepository.UserHasEnrolledCourseWithQuizAsync(user.Id, quizId);
         }
     }
 }

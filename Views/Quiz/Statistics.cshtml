@@ -24,9 +24,12 @@
         <strong>Average percentage:</strong> @Model.ScorePercentage%
     </div>
 
-    <div class="stats-section-title">
-        Your best attempt: @quizSummaryViewModel.Score / @quizSummaryViewModel.TotalScore
-    </div>
+    @if (quizSummaryViewModel.Score > 0 || quizSummaryViewModel.BestScore > 0)
+    {
+        <div class="stats-section-title">
+            Your best attempt: @quizSummaryViewModel.Score / @quizSummaryViewModel.TotalScore
+        </div>
+    }
 
     <div class="stats-section-title">Leaderboard</div>
     <div>

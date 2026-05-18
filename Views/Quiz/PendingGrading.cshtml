@@ -1,0 +1,46 @@
+@model quiz_project.ViewModels.PendingGradingViewModel
+
+<div class="container mt-4">
+    <h2>Pending Manual Grading</h2>
+    <p class="text-muted">Attempts that contain open answers waiting for your review.</p>
+
+    @if (!Model.Attempts.Any())
+    {
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle me-2"></i>No attempts are waiting for grading. All caught up!
+        </div>
+    }
+    else
+    {
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Quiz</th>
+                    <th>User</th>
+                    <th>Ungraded / Total open answers</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Attempts)
+                {
+                    <tr>
+                        <td>@item.QuizTitle</td>
+                        <td>@item.UserName</td>
+                        <td>
+                            <span class="badge @(item.UngradedCount > 0 ? "bg-warning text-dark" : "bg-success")">
+                                @item.UngradedCount / @item.TotalOpenAnswers
+                            </span>
+                        </td>
+                        <td>
+                            <a asp-action="GradeAttempt" asp-route-attemptId="@item.AttemptId"
+                               class="btn btn-sm btn-outline-primary">Grade</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <a asp-action="Index" class="btn btn-secondary mt-3">Back to quizzes</a>
+</div>

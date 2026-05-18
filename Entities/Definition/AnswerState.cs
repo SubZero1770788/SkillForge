@@ -13,5 +13,8 @@ namespace quiz_project.Entities.Definition
         public int QuestionId { get; set; }
         public Question Question { get; set; }
         public List<int> AnswersId { get; set; } = new();
+
+        /// <summary>User's text response for FillInTheBlank or OpenWithImage questions.</summary>
+        public string? OpenText { get; set; }
     }
 }

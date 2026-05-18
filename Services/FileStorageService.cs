@@ -8,10 +8,10 @@ namespace quiz_project.Services
     {
         private readonly string _bucket = configuration["R2:BucketName"]!;
 
-        public async Task<string> UploadAsync(IFormFile file, int chapterId)
+        public async Task<string> UploadAsync(IFormFile file, int resourceId, string folder = "chapters")
         {
             var extension = Path.GetExtension(file.FileName);
-            var objectKey = $"chapters/{chapterId}/{Guid.NewGuid()}{extension}";
+            var objectKey = $"{folder}/{resourceId}/{Guid.NewGuid()}{extension}";
 
             using var stream = file.OpenReadStream();
 
@@ -25,12 +25,22 @@ namespace quiz_project.Services
             return objectKey;
         }
 
-        public async Task<string> GetPresignedUrlAsync(string objectKey)
+        public async Task<(Stream stream, string contentType, string fileName)> DownloadAsync(string objectKey)
         {
-            return await minioClient.PresignedGetObjectAsync(new PresignedGetObjectArgs()
+            var ms = new MemoryStream();
+
+            await minioClient.GetObjectAsync(new GetObjectArgs()
                 .WithBucket(_bucket)
                 .WithObject(objectKey)
-                .WithExpiry(60 * 60)); // 1 hour
+                .WithCallbackStream((stream, ct) =>
+                {
+                    stream.CopyToAsync(ms, ct).GetAwaiter().GetResult();
+                    return Task.CompletedTask;
+                }));
+
+            ms.Position = 0;
+            var fileName = Path.GetFileName(objectKey);
+            return (ms, "application/octet-stream", fileName);
         }
 
         public async Task DeleteAsync(string objectKey)

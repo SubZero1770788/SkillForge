@@ -1,0 +1,102 @@
+@model quiz_project.ViewModels.AttemptDetailViewModel
+@using quiz_project.Entities.Definition
+
+<div class="stats-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Attempt detail — <strong>@Model.UserName</strong></h3>
+        @if (Model.CourseId.HasValue)
+        {
+            <a asp-action="UserAttempts"
+               asp-route-userId="@Model.UserId"
+               asp-route-courseId="@Model.CourseId"
+               class="btn btn-danger text-white">Return</a>
+        }
+        else
+        {
+            <a asp-action="PendingGrading" class="btn btn-danger text-white">Return</a>
+        }
+    </div>
+
+    <div class="mb-4">
+        <strong>Quiz:</strong> @Model.QuizTitle &nbsp;|&nbsp;
+        <strong>Total score:</strong> @Model.EarnedScore / @Model.TotalScore
+        <small class="text-muted ms-1">(@Model.ScorePercent%)</small>
+    </div>
+
+    @for (int i = 0; i < Model.Questions.Count; i++)
+    {
+        var q = Model.Questions[i];
+
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <strong>Q@(i + 1):</strong> @q.Description
+                    <span class="badge ms-2
+                        @(q.Type == QuestionType.MultipleChoice ? "bg-secondary" :
+                          q.Type == QuestionType.SingleChoice ? "bg-secondary" :
+                          q.Type == QuestionType.FillInTheBlank ? "bg-info text-dark" : "bg-warning text-dark")">
+                        @q.Type
+                    </span>
+                </span>
+                <span>
+                    <strong>@q.EarnedScore / @q.MaxScore pts</strong>
+                    @if (!q.IsGraded)
+                    {
+                        <span class="badge bg-warning text-dark ms-1">Pending</span>
+                    }
+                </span>
+            </div>
+
+            <div class="card-body">
+                @if (q.Type == QuestionType.MultipleChoice || q.Type == QuestionType.SingleChoice)
+                {
+                    <ul class="list-unstyled mb-0">
+                        @foreach (var opt in q.Options)
+                        {
+                            var icon = opt.IsCorrect ? "✅" : (opt.WasSelected ? "❌" : "◻");
+                            var cls = opt.IsCorrect ? "text-success" : (opt.WasSelected && !opt.IsCorrect ? "text-danger" : "text-muted");
+                            <li class="@cls">
+                                @icon
+                                @if (opt.WasSelected) { <strong>@opt.Description</strong> }
+                                else { @opt.Description }
+                                @if (opt.IsCorrect) { <small class="ms-1">(correct)</small> }
+                            </li>
+                        }
+                    </ul>
+                }
+                else if (q.Type == QuestionType.FillInTheBlank)
+                {
+                    <p class="mb-1"><strong>Student answer:</strong> <em>@(string.IsNullOrWhiteSpace(q.OpenText) ? "—" : q.OpenText)</em></p>
+                    @if (!string.IsNullOrEmpty(q.Keywords))
+                    {
+                        <p class="text-muted small mb-0">Accepted: @q.Keywords</p>
+                    }
+                }
+                else if (q.Type == QuestionType.OpenWithImage)
+                {
+                    @if (!string.IsNullOrEmpty(q.ImagePath))
+                    {
+                        <div class="mb-2">
+                            <img src="/Quiz/QuestionImage?path=@Uri.EscapeDataString(q.ImagePath)"
+                                 class="img-fluid rounded" style="max-height:200px;" alt="Question image" />
+                        </div>
+                    }
+                    <p class="mb-1"><strong>Student answer:</strong></p>
+                    <div class="alert alert-light border">@(string.IsNullOrWhiteSpace(q.OpenText) ? "—" : q.OpenText)</div>
+                    @if (q.IsGraded)
+                    {
+                        <p class="text-success mb-0"><strong>Graded:</strong> @q.ManualScore pts</p>
+                    }
+                    else
+                    {
+                        <p class="text-warning mb-0">⏳ Awaiting manual grading</p>
+                    }
+                    @if (!string.IsNullOrEmpty(q.Keywords))
+                    {
+                        <p class="text-muted small mb-0">Keywords: @q.Keywords</p>
+                    }
+                }
+            </div>
+        </div>
+    }
+</div>

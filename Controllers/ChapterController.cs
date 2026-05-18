@@ -50,6 +50,21 @@ namespace quiz_project.Controllers
             return View(chapterViewModel);
         }
 
+        [HttpGet, ActionName("Content")]
+        public async Task<IActionResult> ContentPartialAsync(int chapterId)
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return Unauthorized();
+
+            var chapterViewModel = await chapterService.GetViewAsync(chapterId, user.Id);
+            if (chapterViewModel is null) return NotFound();
+
+            if (chapterViewModel.IsLocked)
+                return PartialView("_ContentLocked", chapterViewModel);
+
+            return PartialView("_Content", chapterViewModel);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Complete(int chapterId, int moduleId)
         {
@@ -181,8 +196,8 @@ namespace quiz_project.Controllers
             if (chapter is null || string.IsNullOrEmpty(chapter.FilePath))
                 return NotFound();
 
-            var url = await fileStorageService.GetPresignedUrlAsync(chapter.FilePath);
-            return Redirect(url);
+            var (stream, contentType, fileName) = await fileStorageService.DownloadAsync(chapter.FilePath);
+            return File(stream, contentType, fileName);
         }
 
         [HttpPost, ActionName("Delete")]

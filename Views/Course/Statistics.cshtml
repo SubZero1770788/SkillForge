@@ -8,6 +8,34 @@
 
     <div class="mb-4">
         <strong>Enrolled users:</strong> @Model.TotalUsers
+
+        @if (Model.EnrolledUsers.Any())
+        {
+            <div class="mt-3">
+                <table class="table table-sm table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>User</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.EnrolledUsers)
+                        {
+                            <tr>
+                                <td>@user.UserName</td>
+                                <td>
+                                    <a asp-controller="Quiz" asp-action="UserAttempts"
+                                       asp-route-userId="@user.UserId"
+                                       asp-route-courseId="@Model.CourseId"
+                                       class="btn btn-sm btn-outline-primary">View attempts</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
     </div>
 
     @foreach (var module in Model.Modules)
