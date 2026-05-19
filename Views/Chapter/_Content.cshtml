@@ -30,15 +30,29 @@
 {
     <div class="mb-4">
         <h5>Chapter Quiz</h5>
-        <a href="/QuizGame/Index?quizId=@Model.QuizId" class="btn btn-primary">Start quiz</a>
+        <a href="/QuizGame/Index?quizId=@Model.QuizId" class="btn btn-primary">
+            @(Model.QuizPassed ? "Retake quiz" : "Start quiz")
+        </a>
+        @if (Model.RequireQuizPass && Model.QuizPassed)
+        {
+            <span class="badge bg-success ms-2">✓ Passed</span>
+        }
     </div>
 }
 
 @if (!Model.IsCompleted)
 {
-    <button class="btn btn-success mt-2"
-            hx-post="/Chapter/Complete"
-            onclick="completeChapter(@Model.ChapterId, @Model.ModuleId, this)">
-        Mark as completed
-    </button>
+    @if (Model.RequireQuizPass && Model.QuizId.HasValue && !Model.QuizPassed)
+    {
+        <div class="alert alert-warning mt-2 mb-0">
+            You must pass the quiz above to complete this chapter and unlock the next one.
+        </div>
+    }
+    else
+    {
+        <button class="btn btn-success mt-2"
+                onclick="completeChapter(@Model.ChapterId, @Model.ModuleId, this)">
+            Mark as completed
+        </button>
+    }
 }

@@ -1,4 +1,4 @@
-@model quiz_project.Entities.Module
+@model quiz_project.ViewModels.ModuleContentViewModel
 
 <h2 class="mb-3">@Model.Title</h2>
 
@@ -24,6 +24,18 @@
 {
     <div class="mb-4">
         <h5>Module Quiz</h5>
-        <a href="/QuizGame/Index?quizId=@Model.QuizId" class="btn btn-primary">Start quiz</a>
+        <a href="/QuizGame/Index?quizId=@Model.QuizId" class="btn btn-primary">
+            @(Model.QuizPassed ? "Retake quiz" : "Start quiz")
+        </a>
+        @if (Model.RequireQuizPass && Model.QuizPassed)
+        {
+            <span class="badge bg-success ms-2">✓ Passed</span>
+        }
+        else if (Model.RequireQuizPass && !Model.QuizPassed)
+        {
+            <div class="alert alert-warning mt-3 mb-0">
+                You must pass this quiz to complete the module and unlock the next one.
+            </div>
+        }
     </div>
 }

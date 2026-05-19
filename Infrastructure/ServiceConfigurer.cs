@@ -75,6 +75,8 @@ namespace quiz_project.Infrastructure
             builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
             builder.Services.AddScoped<IOnGoingQuizRepository, OnGoingQuizRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IQuizReminderRepository, QuizReminderRepository>();
+            builder.Services.AddScoped<ICreatorApplicationRepository, CreatorApplicationRepository>();
 
             builder.Services.AddScoped<IAccessValidationService, AccessValidationService>();
             builder.Services.AddScoped<IPaginationService<Question>, PaginationService<Question>>();
@@ -87,6 +89,7 @@ namespace quiz_project.Infrastructure
             builder.Services.AddScoped<ICourseService, CourseService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
+            builder.Services.AddScoped<IQuizReminderService, QuizReminderService>();
             builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
             var r2 = builder.Configuration.GetSection("R2");

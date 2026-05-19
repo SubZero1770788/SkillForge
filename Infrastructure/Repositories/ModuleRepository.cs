@@ -14,6 +14,13 @@ namespace quiz_project.Infrastructure.Repositories
                 .FirstOrDefaultAsync(m => m.ModuleId == moduleId);
         }
 
+        public async Task<Module?> GetModuleByQuizIdAsync(int quizId)
+        {
+            return await context.Modules
+                .Include(m => m.Chapters)
+                .FirstOrDefaultAsync(m => m.QuizId == quizId);
+        }
+
         public async Task<IEnumerable<Module>> GetModulesByCourseIdAsync(int courseId)
         {
             return await context.Modules

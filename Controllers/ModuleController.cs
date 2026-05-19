@@ -9,7 +9,7 @@ namespace quiz_project.Controllers
     public class ModuleController(IModuleService moduleService, ICourseQueryService courseQueryService,
         IAccessValidationService accessValidationService, IQuizRepository quizRepository,
         IModuleRepository moduleRepository, IFileStorageService fileStorageService,
-        UserManager<User> userManager) : Controller
+        IAttemptRepository attemptRepository, UserManager<User> userManager) : Controller
     {
         private async Task LoadAvailableQuizzes(int userId)
         {
@@ -99,7 +99,34 @@ namespace quiz_project.Controllers
         {
             var module = await moduleRepository.GetModuleByIdAsync(moduleId);
             if (module is null) return NotFound();
-            return PartialView("_Content", module);
+
+            var quizPassed = false;
+            if (module.QuizId.HasValue)
+            {
+                var user = await userManager.GetUserAsync(User);
+                if (user is not null)
+                {
+                    var quiz = await quizRepository.GetQuizByIdAsync(module.QuizId.Value);
+                    var best = await attemptRepository.GetTopUserAttemptAsync(user.Id, module.QuizId.Value);
+                    if (best is not null && quiz is not null)
+                    {
+                        quizPassed = quiz.PassPercentage == 0
+                            || (quiz.TotalScore > 0 && (double)best.Score / quiz.TotalScore * 100 >= quiz.PassPercentage);
+                    }
+                }
+            }
+
+            var vm = new ModuleContentViewModel
+            {
+                ModuleId = module.ModuleId,
+                Title = module.Title,
+                Description = module.Description,
+                RoadmapFilePath = module.RoadmapFilePath,
+                QuizId = module.QuizId,
+                RequireQuizPass = module.RequireQuizPass,
+                QuizPassed = quizPassed
+            };
+            return PartialView("_Content", vm);
         }
 
         [HttpGet, ActionName("Download")]

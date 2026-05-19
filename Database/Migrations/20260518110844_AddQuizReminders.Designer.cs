@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using quiz_project.Database;
 
@@ -10,9 +11,11 @@ using quiz_project.Database;
 namespace quiz_project.Database.Migrations
 {
     [DbContext(typeof(QuizDb))]
-    partial class QuizDbModelSnapshot : ModelSnapshot
+    [Migration("20260518110844_AddQuizReminders")]
+    partial class AddQuizReminders
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.17");
@@ -266,43 +269,6 @@ namespace quiz_project.Database.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("CourseEnrollments");
-                });
-
-            modelBuilder.Entity("quiz_project.Entities.CreatorApplication", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("AppliedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ContactName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ReviewNote")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("ReviewedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("CreatorApplications");
                 });
 
             modelBuilder.Entity("quiz_project.Entities.Definition.AnswerState", b =>
@@ -885,17 +851,6 @@ namespace quiz_project.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("Course");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("quiz_project.Entities.CreatorApplication", b =>
-                {
-                    b.HasOne("quiz_project.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("User");
                 });

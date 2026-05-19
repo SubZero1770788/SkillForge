@@ -60,7 +60,7 @@
             else if (Model.UserEnrollmentStatus == EnrollmentStatus.Approved)
             {
                 <div class="alert alert-success mt-3">
-                    You are enrolled. <a asp-controller="Course" asp-action="Game" asp-route-CourseId="@Model.CourseId">Start course →</a>
+                    You are enrolled. <a asp-controller="Course" asp-action="Dashboard" asp-route-courseId="@Model.CourseId">Start course →</a>
                 </div>
             }
             else if (Model.UserEnrollmentStatus == EnrollmentStatus.Rejected)

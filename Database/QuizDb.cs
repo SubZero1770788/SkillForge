@@ -225,6 +225,26 @@ namespace quiz_project.Database
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
+            mb.Entity<CreatorApplication>(ca =>
+            {
+                ca.HasKey(ca => ca.Id);
+                ca.HasOne(ca => ca.User)
+                    .WithMany()
+                    .HasForeignKey(ca => ca.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                ca.HasIndex(ca => ca.UserId).IsUnique(); // one application per user
+            });
+
+            mb.Entity<QuizReminderItem>(r =>
+            {
+                r.HasKey(r => r.Id);
+                r.HasOne(r => r.Quiz)
+                    .WithMany()
+                    .HasForeignKey(r => r.QuizId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                r.HasIndex(r => new { r.UserId, r.QuizId }).IsUnique();
+            });
+
             base.OnModelCreating(mb);
             mb.ApplyConfiguration(new RoleConfiguration());
         }
@@ -244,5 +264,7 @@ namespace quiz_project.Database
         public DbSet<AnswerState> AnswerStates { get; set; }
         public DbSet<CourseEnrollment> CourseEnrollments { get; set; }
         public DbSet<OpenAnswerRecord> OpenAnswerRecords { get; set; }
+        public DbSet<QuizReminderItem> QuizReminderItems { get; set; }
+        public DbSet<CreatorApplication> CreatorApplications { get; set; }
     }
 }

@@ -15,6 +15,7 @@ namespace quiz_project.Interfaces
         public Task<QuizAttempt?> GetAttemptWithOpenAnswersAsync(int attemptId);
         public Task<QuizAttempt?> GetAttemptFullDetailAsync(int attemptId);
         public Task<List<QuizAttempt>> GetUserAttemptsForQuizzesAsync(int userId, IEnumerable<int> quizIds);
+        public Task<List<QuizAttempt>> GetAllBestAttemptsForUserAsync(int userId);
         public Task UpdateScoreAsync(int attemptId, int newScore);
         public Task SaveOpenAnswerGradesAsync(List<OpenAnswerRecord> records);
     }

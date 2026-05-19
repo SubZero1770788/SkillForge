@@ -1,0 +1,98 @@
+@model quiz_project.ViewModels.AdminApplicationsViewModel
+@using quiz_project.Entities.Definition
+
+<div class="stats-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Creator Applications</h3>
+        <a asp-action="Users" class="btn btn-outline-secondary">← User Management</a>
+    </div>
+
+    @if (TempData["Success"] is string msg)
+    {
+        <div class="alert alert-success">@msg</div>
+    }
+
+    @* ── PENDING ──────────────────────────────────────────────────── *@
+    <h5 class="mb-3">
+        Pending
+        @if (Model.Pending.Any())
+        {
+            <span class="badge bg-warning text-dark ms-1">@Model.Pending.Count</span>
+        }
+    </h5>
+
+    @if (!Model.Pending.Any())
+    {
+        <div class="alert alert-info">No pending applications.</div>
+    }
+    else
+    {
+        @foreach (var app in Model.Pending)
+        {
+            <div class="card mb-3 border-warning">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>@app.ContactName</strong>
+                        <small class="text-muted ms-2">@app.UserName · @app.Email</small>
+                    </div>
+                    <small class="text-muted">Applied @app.AppliedAt.ToString("dd MMM yyyy HH:mm")</small>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3" style="white-space:pre-wrap">@app.Description</p>
+
+                    <div class="d-flex gap-2 align-items-start flex-wrap">
+                        <form asp-action="ApproveApplication" method="post" class="d-inline">
+                            <input type="hidden" name="applicationId" value="@app.ApplicationId" />
+                            <button class="btn btn-success">Approve — Grant Creator access</button>
+                        </form>
+
+                        <form asp-action="RejectApplication" method="post" class="d-flex gap-2 align-items-start">
+                            <input type="hidden" name="ApplicationId" value="@app.ApplicationId" />
+                            <input type="text" name="ReviewNote" class="form-control form-control-sm"
+                                   style="width:280px" placeholder="Reason for rejection (optional)" />
+                            <button class="btn btn-outline-danger btn-sm">Reject</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+
+    @* ── REVIEWED ─────────────────────────────────────────────────── *@
+    @if (Model.Reviewed.Any())
+    {
+        <h5 class="mt-4 mb-3">Previously reviewed</h5>
+        <table class="table table-sm table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Name / Company</th>
+                    <th>User</th>
+                    <th>Status</th>
+                    <th>Reviewed</th>
+                    <th>Note</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var app in Model.Reviewed)
+                {
+                    <tr>
+                        <td>@app.ContactName</td>
+                        <td><small>@app.UserName</small></td>
+                        <td>
+                            @if (app.Status == ApplicationStatus.Approved)
+                            {
+                                <span class="badge bg-success">Approved</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Rejected</span>
+                            }
+                        </td>
+                        <td><small class="text-muted">@app.ReviewedAt?.ToString("dd MMM yyyy")</small></td>
+                        <td><small class="text-muted">@app.ReviewNote</small></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

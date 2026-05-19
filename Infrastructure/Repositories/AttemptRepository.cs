@@ -101,6 +101,16 @@ namespace quiz_project.Database.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<QuizAttempt>> GetAllBestAttemptsForUserAsync(int userId)
+        {
+            return await context.QuizAttempts
+                .Include(qa => qa.Quiz)
+                .Where(qa => qa.UserId == userId)
+                .GroupBy(qa => qa.QuizId)
+                .Select(g => g.OrderByDescending(qa => qa.Score).First())
+                .ToListAsync();
+        }
+
         public async Task SaveOpenAnswerGradesAsync(List<OpenAnswerRecord> records)
         {
             foreach (var record in records)

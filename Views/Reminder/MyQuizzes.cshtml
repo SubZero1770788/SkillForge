@@ -1,0 +1,44 @@
+@model quiz_project.ViewModels.MyQuizzesViewModel
+@using quiz_project.Services
+
+@{
+    var dueItems    = Model.Quizzes.Where(q => q.HasReminder && q.IsDue).ToList();
+    var upcomingItems = Model.Quizzes.Where(q => q.HasReminder && !q.IsDue).ToList();
+    var noReminder  = Model.Quizzes.Where(q => !q.HasReminder).ToList();
+}
+
+<div class="stats-wrapper">
+    <h3 class="mb-4">My Quizzes &amp; Review Schedule</h3>
+
+    @if (!Model.Quizzes.Any())
+    {
+        <div class="alert alert-info">You haven't attempted any quizzes yet.</div>
+    }
+    else
+    {
+        @* ── DUE FOR REVIEW ────────────────────────────────────────────── *@
+        @if (dueItems.Any())
+        {
+            <div class="alert alert-warning d-flex align-items-center gap-2 mb-3">
+                <strong>&#128276; @dueItems.Count quiz(es) due for review!</strong>
+            </div>
+
+            <h5 class="text-warning mb-2">Due for review</h5>
+            @await Html.PartialAsync("_QuizTable", dueItems, new ViewDataDictionary(ViewData) { { "showDueDate", true } })
+        }
+
+        @* ── SCHEDULED REMINDERS ──────────────────────────────────────── *@
+        @if (upcomingItems.Any())
+        {
+            <h5 class="mt-4 mb-2">Scheduled reminders</h5>
+            @await Html.PartialAsync("_QuizTable", upcomingItems, new ViewDataDictionary(ViewData) { { "showDueDate", true } })
+        }
+
+        @* ── ALL OTHER ATTEMPTED QUIZZES ─────────────────────────────── *@
+        @if (noReminder.Any())
+        {
+            <h5 class="mt-4 mb-2">Attempted quizzes (no reminder set)</h5>
+            @await Html.PartialAsync("_QuizTable", noReminder, new ViewDataDictionary(ViewData) { { "showDueDate", false } })
+        }
+    }
+</div>

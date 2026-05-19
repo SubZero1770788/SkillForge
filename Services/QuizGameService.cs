@@ -20,7 +20,9 @@ namespace quiz_project.Services
         IAttemptRepository attemptRepository,
         IAccessValidationService accessValidationService,
         IQuizQueryService quizQueryService,
-        IPaginationService<Question> paginationService) : IQuizGameService
+        IPaginationService<Question> paginationService,
+        IChapterService chapterService,
+        IQuizReminderService quizReminderService) : IQuizGameService
     {
         public async Task<(bool, QuizSummaryViewModel?)> AttemptSummary(int quizId, User user)
         {
@@ -294,6 +296,18 @@ namespace quiz_project.Services
 
             await onGoingQuizRepository.DeleteAsync(userId, quizId);
             await attemptRepository.CreateAsync(attempt);
+
+            // Post-attempt hooks: module completion + spaced-repetition reminder update
+            var quiz = await quizRepository.GetQuizByIdAsync(quizId);
+            if (quiz is not null)
+            {
+                if (quiz.Scope == QuizScope.Module)
+                    await chapterService.TryCompleteModuleByQuizAsync(quizId, userId, userScore, quiz.TotalScore);
+
+                bool passed = quiz.PassPercentage == 0
+                    || (quiz.TotalScore > 0 && (double)userScore / quiz.TotalScore * 100 >= quiz.PassPercentage);
+                await quizReminderService.OnQuizAttemptFinishedAsync(userId, quizId, passed);
+            }
         }
 
         private static List<string> ParseKeywords(string? keywords)

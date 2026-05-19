@@ -117,5 +117,25 @@ namespace quiz_project.Controllers
             TempData["SuccessMessage"] = "Email changed successfully.";
             return View("Settings");
         }
+
+        // ── Creator registration ──────────────────────────────────────────
+
+        [HttpGet, AllowAnonymous, ActionName("RegisterCreator")]
+        public IActionResult RegisterCreatorGet() => View();
+
+        [HttpPost, AllowAnonymous, ActionName("RegisterCreator")]
+        public async Task<IActionResult> RegisterCreatorPost(RegisterCreatorViewModel vm)
+        {
+            if (!ModelState.IsValid) return View(vm);
+
+            var (success, error) = await userService.RegisterCreatorAsync(vm);
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, error);
+                return View(vm);
+            }
+
+            return View("CreatorApplicationSent");
+        }
     }
 }

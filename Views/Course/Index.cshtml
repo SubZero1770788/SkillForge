@@ -4,13 +4,20 @@
 @model List<quiz_project.ViewModels.CourseViewModel>
 
 <div class="container">
-    <div class="d-flex justify-content-between align-items-center">
-        <h1>@ViewData["Title"]</h1>
-
-        <a class="btn btn-primary text-white" asp-area="" asp-controller="Course" asp-action="Create">
-            Create course
-        </a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-0">@ViewData["Title"]</h1>
+        <div class="d-flex gap-2 align-items-center">
+            <div class="input-group" style="max-width: 280px;">
+                <span class="input-group-text bg-white border-end-0">&#128269;</span>
+                <input id="grid-search" type="search" class="form-control border-start-0"
+                       placeholder="Search courses…" autocomplete="off" />
+            </div>
+            <a class="btn btn-primary text-white" asp-area="" asp-controller="Course" asp-action="Create">
+                Create course
+            </a>
+        </div>
     </div>
+    <p id="search-empty" class="text-muted d-none">No courses match your search.</p>
 </div>
 
 <div class="container">
@@ -20,3 +27,9 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        initGridSearch('grid-search', '.quiz-card', 'search-empty');
+    </script>
+}

@@ -10,11 +10,13 @@ using quiz_project.Entities;
 using quiz_project.Extensions;
 using quiz_project.Interfaces;
 using quiz_project.ViewModels;
+using System;
 
 namespace quiz_project.Services
 {
     public class UserService(UserManager<User> userManager, RoleManager<Role> roleManager,
-                    IUserMapper userMapper, SignInManager<User> signInManager, IUserRepository userRepository) : IUserService
+                    IUserMapper userMapper, SignInManager<User> signInManager, IUserRepository userRepository,
+                    ICreatorApplicationRepository creatorApplicationRepository) : IUserService
     {
         public async Task<List<ActiveUserViewModel>> GetAllActiveUsersAsync()
         {
@@ -97,6 +99,36 @@ namespace quiz_project.Services
 
             return (false, "An error has occured");
 
+        }
+
+        public async Task<(bool, string error)> RegisterCreatorAsync(RegisterCreatorViewModel vm)
+        {
+            if (await userManager.FindByNameAsync(vm.UserName) is not null)
+                return (false, "The username is already taken.");
+
+            if (await userManager.FindByEmailAsync(vm.Email) is not null)
+                return (false, "An account with this email already exists.");
+
+            var user = new User { UserName = vm.UserName, Email = vm.Email };
+            var created = await userManager.CreateAsync(user, vm.Password);
+            if (!created.Succeeded)
+                return (false, string.Join("; ", created.Errors.Select(e => e.Description)));
+
+            // Creator applicants get the User role so they can log in and browse
+            var userRole = await roleManager.FindByNameAsync("User");
+            await userManager.AddToRoleAsync(user, userRole!.Name!);
+
+            // Register the application — awaits admin approval
+            await creatorApplicationRepository.AddAsync(new CreatorApplication
+            {
+                UserId = user.Id,
+                ContactName = vm.ContactName,
+                Description = vm.Description,
+                AppliedAt = DateTime.UtcNow
+            });
+
+            // Don't auto-sign-in; show a "pending approval" page instead
+            return (true, string.Empty);
         }
 
         public async Task<(bool, string error)> ChangeEmailAsync(string username, EmailChangeViewModel emailChangeViewModel)

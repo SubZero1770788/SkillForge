@@ -5,7 +5,8 @@
 <div class="quiz-grid">
     @foreach (CourseViewModel courseViewModel in Model)
     {
-        <div class="quiz-card">
+        <div class="quiz-card"
+             data-search="@((courseViewModel?.Title + " " + courseViewModel?.Description)?.ToLower())">
             <div class="quiz-title">@courseViewModel?.Title</div>
             <div class="quiz-description">@courseViewModel?.Description</div>
 

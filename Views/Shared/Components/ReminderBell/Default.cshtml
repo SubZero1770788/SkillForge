@@ -1,0 +1,14 @@
+@model int
+@* model = count of due reminders *@
+
+<a class="nav-link text-dark position-relative" asp-controller="Reminder" asp-action="MyQuizzes"
+   title="My Quizzes &amp; Reminders">
+    &#128276;
+    @if (Model > 0)
+    {
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+              style="font-size:.65rem;">
+            @Model
+        </span>
+    }
+</a>

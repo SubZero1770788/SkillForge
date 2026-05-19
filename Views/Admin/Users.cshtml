@@ -1,0 +1,153 @@
+@model quiz_project.ViewModels.AdminUserListViewModel
+
+<div class="stats-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>User Management</h3>
+        <a asp-action="Applications" class="btn btn-warning text-dark position-relative">
+            Creator Applications
+            @if (Model.PendingApplicationsCount > 0)
+            {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    @Model.PendingApplicationsCount
+                </span>
+            }
+        </a>
+    </div>
+
+    @if (TempData["Error"] is string err)
+    {
+        <div class="alert alert-danger">@err</div>
+    }
+
+    <div class="mb-3">
+        <div class="input-group" style="max-width:320px;">
+            <span class="input-group-text bg-white border-end-0">&#128269;</span>
+            <input id="user-search" type="search" class="form-control border-start-0"
+                   placeholder="Search users…" autocomplete="off" />
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle" id="users-table">
+            <thead class="table-light">
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Roles</th>
+                    <th>Status</th>
+                    <th>Access</th>
+                    <th>Roles</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var u in Model.Users)
+                {
+                    <tr data-search="@(u.UserName.ToLower() + " " + u.Email.ToLower())"
+                        class="@(u.IsLockedOut ? "table-danger" : "")">
+                        <td><strong>@u.UserName</strong></td>
+                        <td><small class="text-muted">@u.Email</small></td>
+                        <td>
+                            @foreach (var r in u.Roles)
+                            {
+                                var badge = r switch {
+                                    "Admin"   => "bg-danger",
+                                    "Creator" => "bg-warning text-dark",
+                                    "User"    => "bg-primary",
+                                    _         => "bg-secondary"
+                                };
+                                <span class="badge @badge me-1">@r</span>
+                            }
+                        </td>
+                        <td>
+                            @if (u.IsLockedOut)
+                            {
+                                <span class="badge bg-danger">Locked</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                        </td>
+                        <td>
+                            @if (u.IsLockedOut)
+                            {
+                                <form asp-action="UnlockUser" method="post" class="d-inline">
+                                    <input type="hidden" name="userId" value="@u.UserId" />
+                                    <button class="btn btn-sm btn-success">Unlock</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="LockUser" method="post" class="d-inline">
+                                    <input type="hidden" name="userId" value="@u.UserId" />
+                                    <button class="btn btn-sm btn-outline-danger">Lock</button>
+                                </form>
+                            }
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1 flex-wrap">
+                                @* Creator role toggle *@
+                                @if (u.IsCreator)
+                                {
+                                    <form asp-action="SetRole" method="post" class="d-inline">
+                                        <input type="hidden" name="userId" value="@u.UserId" />
+                                        <input type="hidden" name="role" value="Creator" />
+                                        <input type="hidden" name="grant" value="false" />
+                                        <button class="btn btn-sm btn-outline-warning">Revoke Creator</button>
+                                    </form>
+                                }
+                                else if (u.IsUser)
+                                {
+                                    <form asp-action="SetRole" method="post" class="d-inline">
+                                        <input type="hidden" name="userId" value="@u.UserId" />
+                                        <input type="hidden" name="role" value="Creator" />
+                                        <input type="hidden" name="grant" value="true" />
+                                        <button class="btn btn-sm btn-warning text-dark">Grant Creator</button>
+                                    </form>
+                                }
+
+                                @* User role toggle *@
+                                @if (u.IsUser && !u.IsAdmin)
+                                {
+                                    <form asp-action="SetRole" method="post" class="d-inline">
+                                        <input type="hidden" name="userId" value="@u.UserId" />
+                                        <input type="hidden" name="role" value="User" />
+                                        <input type="hidden" name="grant" value="false" />
+                                        <button class="btn btn-sm btn-outline-secondary"
+                                                title="Remove User role (blocks course access)">Revoke User</button>
+                                    </form>
+                                }
+                                else if (!u.IsUser && !u.IsAdmin)
+                                {
+                                    <form asp-action="SetRole" method="post" class="d-inline">
+                                        <input type="hidden" name="userId" value="@u.UserId" />
+                                        <input type="hidden" name="role" value="User" />
+                                        <input type="hidden" name="grant" value="true" />
+                                        <button class="btn btn-sm btn-outline-primary">Restore User</button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p class="text-muted small">
+        <strong>Lock</strong> — blocks login entirely. &nbsp;
+        <strong>Revoke User</strong> — account remains but loses access to courses.
+    </p>
+</div>
+
+@section Scripts {
+    <script>
+        const input = document.getElementById('user-search');
+        input.addEventListener('input', function () {
+            const q = this.value.trim().toLowerCase();
+            document.querySelectorAll('#users-table tbody tr').forEach(row => {
+                row.style.display = !q || (row.dataset.search || '').includes(q) ? '' : 'none';
+            });
+        });
+        input.addEventListener('keydown', e => { if (e.key === 'Escape') { input.value = ''; input.dispatchEvent(new Event('input')); } });
+    </script>
+}

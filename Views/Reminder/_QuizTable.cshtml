@@ -1,0 +1,108 @@
+@model List<quiz_project.ViewModels.AttemptedQuizItem>
+@using quiz_project.Services
+@{
+    bool showDueDate = ViewData["showDueDate"] is bool b && b;
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+}
+
+<div class="table-responsive mb-3">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Quiz</th>
+                <th>Best score</th>
+                <th>Status</th>
+                @if (showDueDate)
+                {
+                    <th>Next review</th>
+                    <th>Interval</th>
+                }
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var q in Model)
+            {
+                <tr class="@(q.IsDue ? "table-warning" : "")">
+                    <td><strong>@q.Title</strong></td>
+                    <td>
+                        @if (q.TotalScore > 0)
+                        {
+                            <span>@q.BestScore / @q.TotalScore</span>
+                            <small class="text-muted ms-1">(@q.BestPercent%)</small>
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </td>
+                    <td>
+                        @if (q.Passed)
+                        {
+                            <span class="badge bg-success">Passed</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Failed</span>
+                        }
+                    </td>
+                    @if (showDueDate)
+                    {
+                        <td>
+                            @if (q.NextReviewDate.HasValue)
+                            {
+                                @if (q.IsDue)
+                                {
+                                    <span class="text-danger fw-bold">Now!</span>
+                                }
+                                else
+                                {
+                                    <span>@q.NextReviewDate.Value.ToLocalTime().ToString("dd MMM yyyy")</span>
+                                }
+                            }
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                every @QuizReminderService.GetIntervalDays(q.IntervalIndex) d
+                                @if (q.IntervalIndex > 0)
+                                {
+                                    <span class="badge bg-light text-dark ms-1">step @(q.IntervalIndex + 1)</span>
+                                }
+                            </small>
+                        </td>
+                    }
+                    <td class="d-flex gap-1 flex-wrap justify-content-end">
+                        <a asp-controller="QuizGame" asp-action="Index"
+                           asp-route-quizId="@q.QuizId"
+                           class="btn btn-sm btn-outline-primary">
+                            @(q.IsDue ? "Review now" : "Retake")
+                        </a>
+
+                        @if (q.HasReminder)
+                        {
+                            <form asp-controller="Reminder" asp-action="RemoveReminder" method="post" class="d-inline">
+                                <input type="hidden" name="reminderId" value="@q.ReminderId" />
+                                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                        title="Remove from reminder schedule">
+                                    &#128276; Remove
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-controller="Reminder" asp-action="AddReminder" method="post" class="d-inline">
+                                <input type="hidden" name="quizId" value="@q.QuizId" />
+                                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                <button type="submit" class="btn btn-sm btn-success"
+                                        title="Add to spaced-repetition schedule">
+                                    &#128276; Add reminder
+                                </button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
