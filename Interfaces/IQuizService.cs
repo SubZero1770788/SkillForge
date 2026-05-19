@@ -13,5 +13,7 @@ namespace quiz_project.Interfaces
         public Task<(bool success, string error)> CreateAsync(QuizViewModel quizViewModel, int userId);
         public Task<QuizViewModel> GetEditAsync(int quizId);
         public Task<(bool success, IEnumerable<string> errors)> PostEditAsync(QuizViewModel quizViewModel, int userId);
+        public Task<bool> HasAttemptsAsync(int quizId);
+        public Task<(bool success, string error)> DuplicateAsync(int quizId, int userId);
     }
 }

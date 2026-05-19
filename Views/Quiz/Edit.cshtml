@@ -27,6 +27,21 @@
         </form>
     </div>
 
+    @if ((bool)(ViewBag.IsLocked ?? false))
+    {
+        <div class="alert alert-warning d-flex align-items-center gap-3 mb-3">
+            <span style="font-size:1.4rem;">&#128274;</span>
+            <div>
+                <strong>This quiz has recorded attempts and cannot be edited.</strong><br />
+                <span class="text-muted">Duplicate it to create a new editable copy, then update it on the course.</span>
+            </div>
+            <form asp-action="Duplicate" method="post" class="ms-auto">
+                <input type="hidden" name="quizId" value="@Model.QuizId" />
+                <button class="btn btn-primary">Duplicate &amp; Edit</button>
+            </form>
+        </div>
+    }
+
     <form method="post">
         <div class="row">
 
@@ -84,7 +99,8 @@
                     <input asp-for="PassPercentage" type="number" min="0" max="100" class="form-control" style="max-width:120px;" />
                 </div>
 
-                <button type="submit" class="btn btn-primary mt-2">Update</button>
+                <button type="submit" class="btn btn-primary mt-2"
+                        @((bool)(ViewBag.IsLocked ?? false) ? "disabled" : "")>Update</button>
                 <div asp-validation-summary="All" class="text-danger mt-2"></div>
             </div>
 

@@ -35,6 +35,11 @@
                         <button type="submit" class="btn btn-warning text-white">Edit</button>
                     </form>
 
+                    <form asp-controller="Quiz" asp-action="Duplicate" method="post">
+                        <input type="hidden" name="quizId" value="@quizViewModel?.QuizId" />
+                        <button type="submit" class="btn btn-secondary text-white">Duplicate</button>
+                    </form>
+
                     <form asp-controller="Quiz" asp-action="Delete" method="post">
                         <input type="hidden" name="Id" value="@quizViewModel?.QuizId" />
                         <button type="submit" class="btn btn-danger text-white">Delete</button>

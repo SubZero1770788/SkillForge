@@ -108,6 +108,7 @@ namespace quiz_project.Controllers
             }
 
             var quizViewModel = await quizService.GetEditAsync(quizId);
+            ViewBag.IsLocked = await quizService.HasAttemptsAsync(quizId);
 
             return View(quizViewModel);
         }
@@ -141,6 +142,22 @@ namespace quiz_project.Controllers
 
             }
             return RedirectToAction("Edit");
+        }
+
+        [HttpPost, ActionName("Duplicate")]
+        [Authorize(Roles = "Creator")]
+        public async Task<IActionResult> DuplicateQuizAsync(int quizId)
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+
+            var owns = await accessValidationService.UserOwnsQuizAsync(quizId, user);
+            if (!owns && !User.IsInRole("Admin")) return RedirectToAction("Index")!;
+
+            var (success, error) = await quizService.DuplicateAsync(quizId, user.Id);
+            if (!success) TempData["Error"] = error;
+
+            return RedirectToAction("Index");
         }
 
         [HttpPost, ActionName("Delete")]
