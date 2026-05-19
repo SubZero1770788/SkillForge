@@ -59,5 +59,11 @@ namespace quiz_project.Services
             var quizes = await quizRepository.GetPublicQuizzes();
             return quizes.Select(q => quizMapper.ToQuizViewModel(q)).ToList();
         }
+
+        public async Task<List<QuizViewModel>> GetAllQuizzesAsync()
+        {
+            var quizes = await quizRepository.GetQuizesAsync();
+            return quizes.Select(q => quizMapper.ToQuizViewModel(q)).ToList();
+        }
     }
 }

@@ -18,13 +18,15 @@ namespace quiz_project.Controllers
                                  IAttemptRepository attemptRepository, IModuleRepository moduleRepository) : Controller
     {
         [HttpGet]
-        [Authorize(Roles = "Creator")]
+        [Authorize(Roles = "Creator,Admin")]
         public async Task<IActionResult> Index()
         {
             var user = await userManager.GetUserAsync(User);
             if (user is null) return RedirectToAction("Register", "User")!;
 
-            var quizViewModels = await quizQueryService.GetUserQuizzesAsync(user.Id);
+            var quizViewModels = User.IsInRole("Admin")
+                ? await quizQueryService.GetAllQuizzesAsync()
+                : await quizQueryService.GetUserQuizzesAsync(user.Id);
 
             return View(quizViewModels);
         }

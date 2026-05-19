@@ -10,6 +10,7 @@ namespace quiz_project.Interfaces
     {
         Task<List<QuizViewModel>> GetUserQuizzesAsync(int userId);
         Task<List<QuizViewModel>> GetPublicQuizzesAsync();
+        Task<List<QuizViewModel>> GetAllQuizzesAsync();
         Task<(bool, QuizStatisticsModel?)> GetQuizStatisticsAsync(int quizId, int userId);
         Task<bool> CheckIfPublicAsync(int Id);
         Task<bool> CheckIfRandomizedAsync(int Id);

@@ -1,10 +1,13 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SkillForge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/quiz_project.styles.css" asp-append-version="true" />
@@ -22,9 +25,11 @@
 
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-dark sf-navbar">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Quiz" asp-action="Index">SkillForge</a>
+                <a class="navbar-brand sf-brand" asp-area="" asp-controller="Quiz" asp-action="Index">
+                    <span class="sf-brand-icon">⚡</span> SkillForge
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -32,113 +37,108 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         @if (SignInManager.IsSignedIn(User) && (User.IsInRole("User") || User.IsInRole("Moderator") ||
-                                                User.IsInRole("Admin") || User.IsInRole("Creator")))
+                                        User.IsInRole("Admin") || User.IsInRole("Creator")))
                         {
                             @if (User.IsInRole("User"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Course" asp-action="MyCourses">Courses</a>
+                                    <a class="nav-link" asp-area="" asp-controller="Course" asp-action="MyCourses">Courses</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Menu" asp-action="BrowseCourses">Browse Courses</a>
+                                    <a class="nav-link" asp-area="" asp-controller="Menu" asp-action="BrowseCourses">Browse Courses</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Reminder" asp-action="MyQuizzes">My Quizzes</a>
-                                </li>
-                            }
-                            @if (User.IsInRole("Admin") || User.IsInRole("Creator"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Course" asp-action="Index">My Courses</a>
+                                    <a class="nav-link" asp-area="" asp-controller="Reminder" asp-action="MyQuizzes">My Quizzes</a>
                                 </li>
                             }
-                            @if (User.IsInRole("Admin") || User.IsInRole("Creator"))
+                            @if (User.IsInRole("Creator") && !User.IsInRole("Admin"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Quiz" asp-action="Index">Manage Quizzes</a>
+                                    <a class="nav-link" asp-area="" asp-controller="Course" asp-action="Index">My Courses</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Quiz" asp-action="PendingGrading">Grade Answers</a>
+                                    <a class="nav-link" asp-area="" asp-controller="Quiz" asp-action="Index">Manage Quizzes</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Quiz" asp-action="PendingGrading">Grade Answers</a>
+                                </li>
+                            }
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Menu" asp-action="BrowseCourses">Browse Courses</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Quiz" asp-action="Index">Manage Quizzes</a>
                                 </li>
                             }
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Settings">Settings</a>
+                                <a class="nav-link" asp-area="" asp-controller="User" asp-action="Settings">Settings</a>
                             </li>
                         }
                         @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Manager") || User.IsInRole("Admin")))
-                                        {
-                                            <li class="nav-item">
-                                                <a class="nav-link text-dark" asp-area="" asp-controller="Menu" asp-action="Active">Active
-                                                    users</a>
-                                                </li>
-                                                @* <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Register">View
-                                    chats</a>
-                            </li>
+                        {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Login">Moderate
-                                    quizz</a>
-                            </li> *@
-                                            }
-                                            @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
-                                            {
-                                                <li class="nav-item">
-                                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Users">Admin Panel</a>
-                                                </li>
-                                                @* <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Register">Modify
-                                    users</a>
+                                <a class="nav-link" asp-area="" asp-controller="Menu" asp-action="Active">Active users</a>
                             </li>
+                        }
+                        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                        {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Login">Admin
-                                    panel</a>
-                            </li> *@
-                                            }
-                                        </ul>
-                                        <ul class="navbar-nav ml-auto">
-                                            @if (!SignInManager.IsSignedIn(User))
-                                            {
-                                                <li class="nav-item">
-                                                    <a class="nav-link text-dark" asp-area="" asp-controller="User"
-                                                       asp-action="Register">Register</a>
-                                                </li>
-                                                <li class="nav-item">
-                                                    <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Login">Login</a>
-                                                </li>
-                                            }
-                                            else
-                                            {
-                                                @if (User.IsInRole("User"))
-                                                {
-                                                    <li class="nav-item d-flex align-items-center px-2">
-                                                        @await Component.InvokeAsync("ReminderBell")
-                                                    </li>
-                                                }
-                                                <li class="nav-item">
-                                                    <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Logout">Logout
-                                                        @User?.Identity?.Name</a>
-                                                    </li>
-                                                }
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </nav>
-                            </header>
-                            <div class="container">
-                                <main role="main" class="pb-3">
-                                    @RenderBody()
-                                </main>
-                            </div>
+                                <a class="nav-link" asp-area="" asp-controller="Admin" asp-action="Users">Admin Panel</a>
+                            </li>
+                        }
+                    </ul>
+                    <ul class="navbar-nav ms-auto align-items-center">
+                        @if (!SignInManager.IsSignedIn(User))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="User" asp-action="Register">Register</a>
+                            </li>
+                            <li class="nav-item ms-2">
+                                <a class="btn sf-btn-outline-light btn-sm" asp-area="" asp-controller="User" asp-action="Login">Log in</a>
+                            </li>
+                        }
+                        else
+                        {
+                            @if (User.IsInRole("User"))
+                            {
+                                <li class="nav-item d-flex align-items-center px-2">
+                                    @await Component.InvokeAsync("ReminderBell")
+                                </li>
+                            }
+                            <li class="nav-item">
+                                <a class="nav-link sf-user-link" asp-area="" asp-controller="User" asp-action="Settings">
+                                    <span class="sf-avatar">@(User?.Identity?.Name?.Substring(0,1).ToUpper())</span>
+                                    @User?.Identity?.Name
+                                </a>
+                            </li>
+                            <li class="nav-item ms-1">
+                                <a class="btn sf-btn-outline-light btn-sm" asp-area="" asp-controller="User" asp-action="Logout">Log out</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
 
-                            <footer class="border-top footer text-muted">
-                                <div class="container">
-                                    &copy; 2026 - WebCore
-                                </div>
-                            </footer>
-                            <script src="~/lib/jquery/dist/jquery.min.js"></script>
-                            <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-                            <script src="~/js/site.js" asp-append-version="true"></script>
-                            @await RenderSectionAsync("Scripts", required: false)
-                        </body>
+    <div class="container sf-main-content">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
 
-                    </html>
+    <footer class="sf-footer">
+        <div class="container">
+            <span>&copy; 2026 SkillForge &mdash; WebCore</span>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>
