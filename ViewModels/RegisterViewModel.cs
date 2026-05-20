@@ -16,6 +16,9 @@ namespace quiz_project.ViewModels
 
         [DataType(DataType.Password)]
         [Required]
+        [MinLength(12, ErrorMessage = "Password must be at least 12 characters.")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{12,}$",
+            ErrorMessage = "Password must contain uppercase, lowercase, a digit, and a special character.")]
         public string Password { get; set; }
 
         [DataType(DataType.Password)]

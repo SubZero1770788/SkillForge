@@ -1,0 +1,113 @@
+@model quiz_project.ViewModels.AttemptDetailViewModel
+@using quiz_project.Entities.Definition
+
+<div class="stats-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>My answers — <strong>@Model.QuizTitle</strong></h3>
+        @if (ViewBag.ReturnQuizId is int returnQuizId)
+        {
+            <a asp-controller="QuizGame" asp-action="Summary" asp-route-quizId="@returnQuizId"
+               class="btn btn-danger text-white">Back to summary</a>
+        }
+        else
+        {
+            <a asp-controller="Course" asp-action="MyCourses" class="btn btn-danger text-white">Back to courses</a>
+        }
+    </div>
+
+    <div class="mb-4">
+        <strong>Total score:</strong> @Model.EarnedScore / @Model.TotalScore
+        <small class="text-muted ms-1">(@Model.ScorePercent%)</small>
+    </div>
+
+    @for (int i = 0; i < Model.Questions.Count; i++)
+    {
+        var q = Model.Questions[i];
+
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <strong>Q@(i + 1):</strong> @q.Description
+                    <span class="badge ms-2
+                        @(q.Type == QuestionType.MultipleChoice ? "bg-secondary" :
+                          q.Type == QuestionType.SingleChoice   ? "bg-secondary" :
+                          q.Type == QuestionType.FillInTheBlank ? "bg-info text-dark" : "bg-warning text-dark")">
+                        @q.Type
+                    </span>
+                </span>
+                <span>
+                    <strong>@q.EarnedScore / @q.MaxScore pts</strong>
+                    @if (!q.IsGraded)
+                    {
+                        <span class="badge bg-warning text-dark ms-1">Pending review</span>
+                    }
+                </span>
+            </div>
+
+            <div class="card-body">
+                @if (q.Type == QuestionType.MultipleChoice || q.Type == QuestionType.SingleChoice)
+                {
+                    <ul class="list-unstyled mb-0">
+                        @foreach (var opt in q.Options)
+                        {
+                            var icon = opt.IsCorrect ? "✅" : (opt.WasSelected ? "❌" : "◻");
+                            var cls  = opt.IsCorrect ? "text-success fw-semibold"
+                                     : opt.WasSelected ? "text-danger"
+                                     : "text-muted";
+                            <li class="@cls">
+                                @icon
+                                @if (opt.WasSelected) { <strong>@opt.Description</strong> }
+                                else { @opt.Description }
+                                @if (opt.IsCorrect && opt.WasSelected) { <small class="ms-1">(correct ✓)</small> }
+                                else if (opt.IsCorrect) { <small class="ms-1">(correct answer)</small> }
+                            </li>
+                        }
+                    </ul>
+                }
+                else if (q.Type == QuestionType.FillInTheBlank)
+                {
+                    <p class="mb-1">
+                        <strong>Your answer:</strong>
+                        <em>@(string.IsNullOrWhiteSpace(q.OpenText) ? "—" : q.OpenText)</em>
+                        @if (q.EarnedScore == q.MaxScore)
+                        {
+                            <span class="text-success ms-2">✅ Correct</span>
+                        }
+                        else
+                        {
+                            <span class="text-danger ms-2">❌ Incorrect</span>
+                        }
+                    </p>
+                    @if (!string.IsNullOrEmpty(q.Keywords))
+                    {
+                        <p class="text-muted small mb-0">Accepted: @q.Keywords</p>
+                    }
+                }
+                else if (q.Type == QuestionType.OpenWithImage)
+                {
+                    @if (!string.IsNullOrEmpty(q.ImagePath))
+                    {
+                        <div class="mb-2">
+                            <img src="/Quiz/QuestionImage?path=@Uri.EscapeDataString(q.ImagePath)"
+                                 class="img-fluid rounded" style="max-height:200px;" alt="Question image" />
+                        </div>
+                    }
+                    <p class="mb-1"><strong>Your answer:</strong></p>
+                    <div class="alert alert-light border">
+                        @(string.IsNullOrWhiteSpace(q.OpenText) ? "—" : q.OpenText)
+                    </div>
+                    @if (q.IsGraded)
+                    {
+                        <p class="@(q.EarnedScore > 0 ? "text-success" : "text-danger") mb-0">
+                            <strong>Score:</strong> @q.ManualScore / @q.MaxScore pts
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="text-warning mb-0">⏳ Awaiting manual review — score may change</p>
+                    }
+                }
+            </div>
+        </div>
+    }
+</div>

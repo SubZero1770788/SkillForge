@@ -43,6 +43,7 @@ namespace quiz_project.Services
             var pendingGrading = latestAttempt.OpenAnswerRecords?.Count(r => !r.IsGraded) ?? 0;
 
             var quizSummaryViewModel = quizMapper.ToQuizSummaryViewModel(quizDefinition, topScores, users, latestAttempt, bestPlayerScore);
+            quizSummaryViewModel.AttemptId = latestAttempt.QuizAttemptId;
             quizSummaryViewModel.PendingManualGrading = pendingGrading;
 
             return (true, quizSummaryViewModel);
@@ -303,6 +304,8 @@ namespace quiz_project.Services
             {
                 if (quiz.Scope == QuizScope.Module)
                     await chapterService.TryCompleteModuleByQuizAsync(quizId, userId, userScore, quiz.TotalScore);
+                else if (quiz.Scope == QuizScope.Chapter)
+                    await chapterService.TryCompleteChapterByQuizAsync(quizId, userId, userScore, quiz.TotalScore);
 
                 bool passed = quiz.PassPercentage == 0
                     || (quiz.TotalScore > 0 && (double)userScore / quiz.TotalScore * 100 >= quiz.PassPercentage);

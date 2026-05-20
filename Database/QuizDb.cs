@@ -30,6 +30,11 @@ namespace quiz_project.Database
                     .WithOne(m => m.Course)
                     .HasForeignKey(m => m.CourseId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                // Only one public course may have a given title (case-insensitive enforced at app level)
+                en.HasIndex(c => c.Title)
+                    .HasFilter("\"IsPublic\" = 1")
+                    .IsUnique();
             });
 
             mb.Entity<Module>(en =>
@@ -90,6 +95,11 @@ namespace quiz_project.Database
                     .WithOne(qu => qu.Quiz)
                     .HasForeignKey(qu => qu.QuizId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                // Only one public quiz may have a given title (case-insensitive enforced at app level)
+                en.HasIndex(q => q.Title)
+                    .HasFilter("\"IsPublic\" = 1")
+                    .IsUnique();
             });
 
             mb.Entity<Question>(en =>

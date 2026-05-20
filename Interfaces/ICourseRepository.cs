@@ -17,6 +17,6 @@ namespace quiz_project.Interfaces
         Task UpdateCourseAsync(Course course);
         Task CreateCourseAsync(Course course);
         Task<List<Module>> GetModulesByCourseId(int courseId);
-        //Task<Dictionary<(int QuestionId, int AnswerId), int>> GetAnswerSelectionStatsAsync(int courseId);
+        Task<bool> PublicTitleExistsAsync(string title, int excludeCourseId = 0);
     }
 }

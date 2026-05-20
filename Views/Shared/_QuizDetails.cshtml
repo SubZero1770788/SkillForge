@@ -22,7 +22,7 @@
                 Questions count: @quizViewModel?.QuestionCount
             </div>
 
-            <div class="quiz-buttons no-wrap-buttons">
+            <div class="quiz-buttons">
                 <form asp-controller="Quiz" asp-action="Game" method="get">
                     <input type="hidden" name="QuizId" value="@quizViewModel?.QuizId" />
                     <button type="submit" class="btn btn-success text-white">Play</button>

@@ -10,5 +10,6 @@ namespace quiz_project.Interfaces
         Task<CourseEnrollment?> GetByIdAsync(int enrollmentId);
         Task CreateAsync(CourseEnrollment enrollment);
         Task UpdateAsync(CourseEnrollment enrollment);
+        Task<Dictionary<int, int>> GetPendingCountByCourseIdsAsync(IEnumerable<int> courseIds);
     }
 }

@@ -97,7 +97,7 @@ namespace quiz_project.Services
 
             }
 
-            return (false, "An error has occured");
+            return (false, string.Join(" ", created.Errors.Select(e => e.Description)));
 
         }
 
@@ -137,24 +137,26 @@ namespace quiz_project.Services
             if (user == null)
                 return (false, "User not found.");
 
-            // Check current password
             var passwordValid = await userManager.CheckPasswordAsync(user, emailChangeViewModel.Password);
             if (!passwordValid)
                 return (false, "Invalid password.");
 
-            // Generate and confirm email change
-            var token = await userManager.GenerateChangeEmailTokenAsync(user, emailChangeViewModel.newEmail);
-            var result = await userManager.ChangeEmailAsync(user, emailChangeViewModel.newEmail, token);
+            if (string.IsNullOrWhiteSpace(emailChangeViewModel.newEmail))
+                return (false, "New email cannot be empty.");
 
+            if (!string.Equals(emailChangeViewModel.newEmail, emailChangeViewModel.confirmedNewEmail, StringComparison.OrdinalIgnoreCase))
+                return (false, "New email addresses do not match.");
+
+            if (string.Equals(user.Email, emailChangeViewModel.newEmail, StringComparison.OrdinalIgnoreCase))
+                return (false, "New email must be different from the current email.");
+
+            var existing = await userManager.FindByEmailAsync(emailChangeViewModel.newEmail);
+            if (existing != null)
+                return (false, "This email is already in use.");
+
+            var result = await userManager.SetEmailAsync(user, emailChangeViewModel.newEmail);
             if (!result.Succeeded)
                 return (false, string.Join("; ", result.Errors.Select(e => e.Description)));
-
-            // Also update UserName if tied to email
-            user.UserName = emailChangeViewModel.newEmail;
-            var updateResult = await userManager.UpdateAsync(user);
-
-            if (!updateResult.Succeeded)
-                return (false, string.Join("; ", updateResult.Errors.Select(e => e.Description)));
 
             return (true, string.Empty);
         }

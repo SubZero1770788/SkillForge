@@ -38,10 +38,19 @@
 
     @if (!Model.IsCompleted)
     {
-        <form asp-action="Complete" method="post" class="mt-3">
-            <input type="hidden" name="chapterId" value="@Model.ChapterId" />
-            <input type="hidden" name="moduleId" value="@Model.ModuleId" />
-            <button type="submit" class="btn btn-success">Mark as completed</button>
-        </form>
+        @if (Model.QuizId.HasValue)
+        {
+            <div class="alert alert-info mt-3 mb-0">
+                Pass the quiz above to complete this chapter.
+            </div>
+        }
+        else
+        {
+            <form asp-action="Complete" method="post" class="mt-3">
+                <input type="hidden" name="chapterId" value="@Model.ChapterId" />
+                <input type="hidden" name="moduleId" value="@Model.ModuleId" />
+                <button type="submit" class="btn btn-success">Mark as completed</button>
+            </form>
+        }
     }
 </div>

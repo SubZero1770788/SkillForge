@@ -26,7 +26,7 @@
             <input asp-for="ConfirmedPassword" class="form-control" placeholder="••••••••" />
             <span asp-validation-for="ConfirmedPassword" class="text-danger small"></span>
         </div>
-        <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-2"></div>
         <button type="submit" class="btn btn-primary">Create account</button>
     </form>
     <hr class="my-3" />
@@ -35,3 +35,7 @@
         <a asp-action="RegisterCreator" class="fw-semibold">Apply as a Creator →</a>
     </p>
 </div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

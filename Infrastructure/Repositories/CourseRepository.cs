@@ -28,6 +28,14 @@ namespace quiz_project.Entities.Repositories
             var courses = await context.Courses.Where(c => c.IsPublic == true).Include(c => c.Modules).ToListAsync();
             return courses;
         }
+
+        public async Task<bool> PublicTitleExistsAsync(string title, int excludeCourseId = 0)
+        {
+            return await context.Courses.AnyAsync(c =>
+                c.IsPublic &&
+                c.CourseId != excludeCourseId &&
+                c.Title.ToLower() == title.ToLower());
+        }
         public async Task CreateCourseAsync(Course course)
         {
             await context.AddAsync(course);

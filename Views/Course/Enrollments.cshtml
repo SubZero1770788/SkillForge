@@ -56,6 +56,14 @@
                                     <button type="submit" class="btn btn-danger btn-sm">Reject</button>
                                 </form>
                             }
+                            @if (e.Status == EnrollmentStatus.Rejected)
+                            {
+                                <form asp-action="ResetEnrollment" method="post" class="d-inline">
+                                    <input type="hidden" name="enrollmentId" value="@e.EnrollmentId" />
+                                    <input type="hidden" name="courseId" value="@Model.CourseId" />
+                                    <button type="submit" class="btn btn-secondary btn-sm">Re-open</button>
+                                </form>
+                            }
                         </td>
                     </tr>
                 }

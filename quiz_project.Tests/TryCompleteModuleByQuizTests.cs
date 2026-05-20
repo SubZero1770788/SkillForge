@@ -33,6 +33,9 @@ public class TryCompleteModuleByQuizTests
         mapper.Setup(m => m.ToViewModel(It.IsAny<Chapter>(), It.IsAny<bool>(), It.IsAny<bool>()))
               .Returns(new ChapterViewModel());
 
+        var fileStorage = new Mock<IFileStorageService>();
+        fileStorage.Setup(f => f.DeleteAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
+
         return new ChapterService(
             chapterRepo.Object,
             moduleRepo.Object,
@@ -40,7 +43,8 @@ public class TryCompleteModuleByQuizTests
             progressRepo.Object,
             mapper.Object,
             new Mock<IAttemptRepository>().Object,
-            quizRepo.Object);
+            quizRepo.Object,
+            fileStorage.Object);
     }
 
     // ── Module not found ─────────────────────────────────────────────────────

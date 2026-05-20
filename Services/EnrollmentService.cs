@@ -46,6 +46,14 @@ namespace quiz_project.Services
             await enrollmentRepository.UpdateAsync(enrollment);
         }
 
+        public async Task ResetToPendingAsync(int enrollmentId)
+        {
+            var enrollment = await enrollmentRepository.GetByIdAsync(enrollmentId);
+            if (enrollment is null) return;
+            enrollment.Status = EnrollmentStatus.Pending;
+            await enrollmentRepository.UpdateAsync(enrollment);
+        }
+
         public async Task<List<EnrolledCourseViewModel>> GetUserEnrolledCoursesAsync(int userId)
         {
             var enrollments = await enrollmentRepository.GetByUserAsync(userId);

@@ -10,5 +10,7 @@ namespace quiz_project.Interfaces
         Task UpdateChapterAsync(Chapter chapter);
         Task DeleteChapterAsync(Chapter chapter);
         Task<bool> UserHasEnrolledCourseWithQuizAsync(int userId, int quizId);
+        Task<Chapter?> GetChapterByQuizIdAsync(int quizId);
+        Task<Chapter?> GetChapterByQuizIdForUserAsync(int quizId, int userId);
     }
 }

@@ -3,8 +3,19 @@ using quiz_project.ViewModels;
 
 namespace quiz_project.Services
 {
-    public class ModuleService(IModuleRepository moduleRepository, IModuleMapper moduleMapper) : IModuleService
+    public class ModuleService(IModuleRepository moduleRepository, IModuleMapper moduleMapper,
+        IFileStorageService fileStorageService, IQuizRepository quizRepository) : IModuleService
     {
+        private async Task DeleteQuizImagesAsync(int? quizId)
+        {
+            if (!quizId.HasValue) return;
+            var quiz = await quizRepository.GetQuizByIdAsync(quizId.Value);
+            if (quiz is null) return;
+            var tasks = quiz.Questions
+                .Where(q => !string.IsNullOrEmpty(q.ImagePath))
+                .Select(q => fileStorageService.DeleteAsync(q.ImagePath!));
+            await Task.WhenAll(tasks);
+        }
         public async Task<(bool success, string error)> CreateAsync(ModuleViewModel moduleViewModel)
         {
             var module = moduleMapper.ToEntity(moduleViewModel);
@@ -31,8 +42,24 @@ namespace quiz_project.Services
 
         public async Task DeleteAsync(int moduleId)
         {
-            var module = await moduleRepository.GetModuleByIdAsync(moduleId);
+            var module = await moduleRepository.GetModuleByIdAsync(moduleId); // includes Chapters
             if (module is null) return;
+
+            // Delete chapter file attachments and their quiz images
+            foreach (var chapter in module.Chapters)
+            {
+                if (!string.IsNullOrEmpty(chapter.FilePath))
+                    await fileStorageService.DeleteAsync(chapter.FilePath);
+                await DeleteQuizImagesAsync(chapter.QuizId);
+            }
+
+            // Delete module roadmap file
+            if (!string.IsNullOrEmpty(module.RoadmapFilePath))
+                await fileStorageService.DeleteAsync(module.RoadmapFilePath);
+
+            // Delete module quiz images
+            await DeleteQuizImagesAsync(module.QuizId);
+
             await moduleRepository.DeleteModuleAsync(module);
         }
 

@@ -45,21 +45,47 @@
 
     @foreach (var question in @Model.quizSummaryViewModel.Questions)
     {
+        var isOpen = question.Type == quiz_project.Entities.Definition.QuestionType.FillInTheBlank
+                  || question.Type == quiz_project.Entities.Definition.QuestionType.OpenWithImage;
         <div class="question">
             <h5>@question.Description</h5>
-            <ul>
-                @foreach (var answer in question.Answers)
-                {
-                    var percentage = question.TotalAttempts > 0
-                        ? Math.Round((double)answer.SelectedByCount / question.TotalAttempts * 100, 2)
-                        : 0;
-                    <li>
-                        @answer.Description |
-                        Chosen @answer.SelectedByCount times |
-                        Percentage: @percentage%
-                    </li>
-                }
-            </ul>
+
+            @if (!string.IsNullOrEmpty(question.ImagePath))
+            {
+                <img src="/Quiz/QuestionImage?path=@Uri.EscapeDataString(question.ImagePath)"
+                     alt="Question image" class="img-fluid rounded mb-2" style="max-height:240px;" />
+            }
+
+            @if (isOpen && !string.IsNullOrEmpty(question.Keywords))
+            {
+                <p class="mb-1"><strong>Auto-graded keywords:</strong>
+                    @foreach (var kw in question.Keywords.Split(',', System.StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        <span class="badge bg-secondary me-1">@kw.Trim()</span>
+                    }
+                </p>
+            }
+
+            @if (isOpen)
+            {
+                <p class="text-muted small">Open-answer question — individual responses visible in attempt details.</p>
+            }
+            else
+            {
+                <ul>
+                    @foreach (var answer in question.Answers)
+                    {
+                        var percentage = question.TotalAttempts > 0
+                            ? Math.Round((double)answer.SelectedByCount / question.TotalAttempts * 100, 2)
+                            : 0;
+                        <li>
+                            @answer.Description |
+                            Chosen @answer.SelectedByCount times |
+                            Percentage: @percentage%
+                        </li>
+                    }
+                </ul>
+            }
         </div>
     }
 </div>

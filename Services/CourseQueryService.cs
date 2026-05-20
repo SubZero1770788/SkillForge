@@ -21,7 +21,14 @@ namespace quiz_project.Services
         public async Task<List<CourseViewModel>> GetUserCoursesAsync(int userId)
         {
             var courses = await courseRepository.GetCoursesByUserAsync(userId);
-            return courses.Select(c => courseMapper.ToCourseViewModel(c)).ToList();
+            var viewModels = courses.Select(c => courseMapper.ToCourseViewModel(c)).ToList();
+
+            var courseIds = viewModels.Select(c => c.CourseId).ToList();
+            var pendingCounts = await enrollmentRepository.GetPendingCountByCourseIdsAsync(courseIds);
+            foreach (var vm in viewModels)
+                vm.PendingEnrollmentsCount = pendingCounts.GetValueOrDefault(vm.CourseId, 0);
+
+            return viewModels;
         }
 
         public async Task<List<CourseViewModel>> GetUserSignedUpCoursesAsync(int userId)

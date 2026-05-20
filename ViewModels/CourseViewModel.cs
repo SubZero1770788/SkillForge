@@ -13,5 +13,6 @@ namespace quiz_project.ViewModels
         public bool IsSequential { get; set; }
         public bool IsPaid { get; set; }
         public List<ModuleViewModel> Modules { get; set; } = new();
+        public int PendingEnrollmentsCount { get; set; }
     }
 }

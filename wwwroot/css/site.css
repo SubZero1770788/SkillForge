@@ -199,11 +199,15 @@ a:hover { color: var(--sf-primary-dark); }
   border-radius: var(--sf-radius-lg);
   border: 1px solid var(--sf-border);
   box-shadow: var(--sf-shadow-sm);
-  width: 320px;
+  width: 360px;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   transition: box-shadow var(--sf-transition), transform var(--sf-transition), border-color var(--sf-transition);
+}
+
+.course-card {
+  width: 400px;
 }
 
 .quiz-card:hover {

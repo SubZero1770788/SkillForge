@@ -8,6 +8,9 @@
 
   <ItemGroup>
     <Compile Remove="quiz_project.Tests/**" />
+    <Content Remove="quiz_project.Tests/**" />
+    <None Remove="quiz_project.Tests/**" />
+    <EmbeddedResource Remove="quiz_project.Tests/**" />
   </ItemGroup>
 
   <ItemGroup>

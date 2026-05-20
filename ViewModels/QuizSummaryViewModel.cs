@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using quiz_project.Entities.Definition;
 
 namespace quiz_project.ViewModels
 {
     public class QuizSummaryViewModel
     {
+        public int AttemptId { get; set; }
         public int Score { get; set; }
         public int TotalScore { get; set; }
         public int BestScore { get; set; }
@@ -27,6 +29,9 @@ namespace quiz_project.ViewModels
             public int QuestionId { get; set; }
             public string Description { get; set; }
             public int TotalAttempts { get; set; }
+            public QuestionType Type { get; set; }
+            public string? ImagePath { get; set; }
+            public string? Keywords { get; set; }
             public List<AnswerStats> Answers { get; set; }
         }
 

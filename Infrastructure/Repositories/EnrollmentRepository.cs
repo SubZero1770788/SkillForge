@@ -49,5 +49,15 @@ namespace quiz_project.Infrastructure.Repositories
             context.CourseEnrollments.Update(enrollment);
             await context.SaveChangesAsync();
         }
+
+        public async Task<Dictionary<int, int>> GetPendingCountByCourseIdsAsync(IEnumerable<int> courseIds)
+        {
+            var ids = courseIds.ToList();
+            return await context.CourseEnrollments
+                .Where(e => ids.Contains(e.CourseId) && e.Status == EnrollmentStatus.Pending)
+                .GroupBy(e => e.CourseId)
+                .Select(g => new { CourseId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.CourseId, x => x.Count);
+        }
     }
 }

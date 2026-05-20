@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using quiz_project.Entities;
+using quiz_project.Entities.Definition;
 using quiz_project.Interfaces;
 using quiz_project.ViewModels;
 
@@ -11,7 +13,8 @@ namespace quiz_project.Controllers
         UserManager<User> userManager,
         IQuizGameService quizGameService,
         IQuizQueryService quizQueryService,
-        IChapterRepository chapterRepository) : Controller
+        IChapterRepository chapterRepository,
+        IAttemptRepository attemptRepository) : Controller
     {
         [HttpGet]
         public async Task<IActionResult> Index(int QuizId)
@@ -72,14 +75,95 @@ namespace quiz_project.Controllers
 
             // Verify the user can access this quiz (same check as during play)
             if (!await CanUserAccessQuizAsync(quizId, user))
-                return RedirectToAction("MyCourses", "Course");
+                return User.IsInRole("Creator")
+                    ? RedirectToAction("Index", "Quiz")
+                    : RedirectToAction("MyCourses", "Course");
 
             var (success, quizSummaryViewModel) = await quizGameService.AttemptSummary(quizId, user);
 
             if (!success)
-                return RedirectToAction("MyCourses", "Course");
+                return User.IsInRole("Creator")
+                    ? RedirectToAction("Index", "Quiz")
+                    : RedirectToAction("MyCourses", "Course");
+
+            // If this quiz belongs to a chapter, expose the chapterId so the view can link back.
+            // Use the user-scoped lookup so we always return the chapter from the user's own
+            // enrolled (or owned) course — not an unrelated course that happens to share the quiz.
+            var chapter = await chapterRepository.GetChapterByQuizIdForUserAsync(quizId, user.Id);
+            if (chapter is not null)
+                ViewBag.ReturnChapterId = chapter.ChapterId;
 
             return View(quizSummaryViewModel);
+        }
+
+        [HttpGet, ActionName("ReviewAttempt")]
+        [Authorize]
+        public async Task<IActionResult> ReviewAttemptAsync(int attemptId)
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+
+            var attempt = await attemptRepository.GetAttemptFullDetailAsync(attemptId);
+            if (attempt is null) return NotFound();
+
+            // Students can only review their own attempts; creators/admins can see any
+            if (attempt.UserId != user.Id && !User.IsInRole("Creator") && !User.IsInRole("Admin"))
+                return Forbid();
+
+            var quiz = attempt.Quiz;
+
+            var questions = quiz.Questions.Select(q =>
+            {
+                var openRecord = attempt.OpenAnswerRecords.FirstOrDefault(r => r.QuestionId == q.QuestionId);
+
+                int earned = 0;
+                if (q.Type == QuestionType.MultipleChoice || q.Type == QuestionType.SingleChoice)
+                {
+                    var correctIds = q.Answers.Where(a => a.IsCorrect).Select(a => a.AnswerId).OrderBy(x => x).ToList();
+                    var userIds = attempt.AnswerSelections.Where(s => s.QuestionId == q.QuestionId).Select(s => s.AnswerId).OrderBy(x => x).ToList();
+                    earned = correctIds.SequenceEqual(userIds) ? q.QuestionScore : 0;
+                }
+                else if (openRecord != null)
+                {
+                    earned = openRecord.ManualScore ?? 0;
+                }
+
+                return new AttemptQuestionDetail
+                {
+                    Description = q.Description,
+                    Type = q.Type,
+                    ImagePath = q.ImagePath,
+                    MaxScore = q.QuestionScore,
+                    EarnedScore = earned,
+                    Keywords = q.Keywords,
+                    OpenText = openRecord?.OpenText,
+                    IsGraded = openRecord?.IsGraded ?? true,
+                    ManualScore = openRecord?.ManualScore,
+                    Options = q.Answers.Select(a => new AttemptAnswerOption
+                    {
+                        Description = a.Description,
+                        WasSelected = attempt.AnswerSelections.Any(s => s.QuestionId == q.QuestionId && s.AnswerId == a.AnswerId),
+                        IsCorrect = a.IsCorrect
+                    }).ToList()
+                };
+            }).ToList();
+
+            var vm = new AttemptDetailViewModel
+            {
+                AttemptId = attempt.QuizAttemptId,
+                UserName = attempt.User?.UserName ?? "Unknown",
+                QuizTitle = quiz.Title,
+                EarnedScore = attempt.Score,
+                TotalScore = quiz.TotalScore,
+                UserId = attempt.UserId,
+                CourseId = null  // back-navigation handled by the view via ReturnUrl
+            };
+            vm.Questions = questions;
+
+            // Pass the quizId so the view can link back to the Summary page
+            ViewBag.ReturnQuizId = quiz.QuizId;
+
+            return View(vm);
         }
 
         private async Task<bool> CanUserAccessQuizAsync(int quizId, User user)

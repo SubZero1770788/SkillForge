@@ -26,20 +26,33 @@ public class ChapterServiceTests
         Mock<IAttemptRepository> attemptRepo,
         Mock<IQuizRepository> quizRepo,
         Mock<IProgressRepository> progressRepo,
-        Mock<IModuleRepository>? moduleRepo = null)
+        Mock<IModuleRepository>? moduleRepo = null,
+        Mock<ICourseRepository>? courseRepo = null)
     {
         var chapterMapper = new Mock<IChapterMapper>();
         chapterMapper.Setup(m => m.ToViewModel(It.IsAny<Chapter>(), It.IsAny<bool>(), It.IsAny<bool>()))
                      .Returns(new ChapterViewModel());
 
+        var fileStorage = new Mock<IFileStorageService>();
+        fileStorage.Setup(f => f.DeleteAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
+
+        // Default: non-sequential course so sequential guard is never triggered
+        if (courseRepo is null)
+        {
+            courseRepo = new Mock<ICourseRepository>();
+            courseRepo.Setup(r => r.GetCourseByIdAsync(It.IsAny<int>()))
+                      .ReturnsAsync(new Course { CourseId = 1, IsSequential = false, Title = "C", Description = "D", UserId = 1 });
+        }
+
         return new ChapterService(
             chapterRepo.Object,
             (moduleRepo ?? new Mock<IModuleRepository>()).Object,
-            new Mock<ICourseRepository>().Object,
+            courseRepo.Object,
             progressRepo.Object,
             chapterMapper.Object,
             attemptRepo.Object,
-            quizRepo.Object);
+            quizRepo.Object,
+            fileStorage.Object);
     }
 
     // ── MarkAsCompletedAsync — no quiz gate ──────────────────────────────────
@@ -89,63 +102,39 @@ public class ChapterServiceTests
         progressRepo.Verify(r => r.MarkChapterCompletedAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
-    // ── MarkAsCompletedAsync — quiz passed → allowed ─────────────────────────
+    // ── MarkAsCompletedAsync — chapter has quiz → manual completion always blocked ──
+    // Chapters with a quiz can only be completed via TryCompleteChapterByQuizAsync
+    // (called automatically by the quiz game engine after a successful attempt).
 
     [Fact]
-    public async Task MarkAsCompleted_RequireQuizPass_QuizPassed_MarksChapter()
+    public async Task MarkAsCompleted_ChapterHasQuiz_BlocksManualCompletion_EvenWhenQuizPassed()
     {
         var chapter = MakeChapter(requireQuizPass: true, quizId: 99);
         var chapterRepo = new Mock<IChapterRepository>();
-        var attemptRepo = new Mock<IAttemptRepository>();
-        var quizRepo = new Mock<IQuizRepository>();
         var progressRepo = new Mock<IProgressRepository>();
-        var moduleRepo = new Mock<IModuleRepository>();
 
         chapterRepo.Setup(r => r.GetChapterByIdAsync(1)).ReturnsAsync(chapter);
-        chapterRepo.Setup(r => r.GetChaptersByModuleIdAsync(10)).ReturnsAsync([chapter]);
-        quizRepo.Setup(r => r.GetQuizByIdAsync(99)).ReturnsAsync(MakeQuiz(passPercentage: 80));
-        // Score 90/100 = 90% >= 80% → passed
-        attemptRepo.Setup(r => r.GetTopUserAttemptAsync(7, 99)).ReturnsAsync(MakeAttempt(score: 90));
-        progressRepo.Setup(r => r.MarkChapterCompletedAsync(7, 1)).Returns(Task.CompletedTask);
-        progressRepo.Setup(r => r.GetChapterProgressesForModuleAsync(7, 10))
-                    .ReturnsAsync([new UserPartProgress { ChapterId = 1, IsCompleted = true }]);
-        moduleRepo.Setup(r => r.GetModuleByIdAsync(10))
-                  .ReturnsAsync(new Module { ModuleId = 10, CourseId = 1, Title = "M", Description = "D" });
-        progressRepo.Setup(r => r.MarkModuleCompletedAsync(7, 10)).Returns(Task.CompletedTask);
 
-        var svc = BuildService(chapterRepo, attemptRepo, quizRepo, progressRepo, moduleRepo);
+        var svc = BuildService(chapterRepo, new Mock<IAttemptRepository>(), new Mock<IQuizRepository>(), progressRepo);
         await svc.MarkAsCompletedAsync(chapterId: 1, userId: 7);
 
-        progressRepo.Verify(r => r.MarkChapterCompletedAsync(7, 1), Times.Once);
+        // Manual completion must never fire — quiz game handles it
+        progressRepo.Verify(r => r.MarkChapterCompletedAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
-    // ── MarkAsCompletedAsync — PassPercentage=0 means no threshold ───────────
-
     [Fact]
-    public async Task MarkAsCompleted_RequireQuizPass_PassPercentageZero_AlwaysPasses()
+    public async Task MarkAsCompleted_ChapterHasQuiz_BlocksManualCompletion_WhenPassPercentageZero()
     {
         var chapter = MakeChapter(requireQuizPass: true, quizId: 99);
         var chapterRepo = new Mock<IChapterRepository>();
-        var attemptRepo = new Mock<IAttemptRepository>();
-        var quizRepo = new Mock<IQuizRepository>();
         var progressRepo = new Mock<IProgressRepository>();
-        var moduleRepo = new Mock<IModuleRepository>();
 
         chapterRepo.Setup(r => r.GetChapterByIdAsync(1)).ReturnsAsync(chapter);
-        chapterRepo.Setup(r => r.GetChaptersByModuleIdAsync(10)).ReturnsAsync([chapter]);
-        quizRepo.Setup(r => r.GetQuizByIdAsync(99)).ReturnsAsync(MakeQuiz(passPercentage: 0));
-        attemptRepo.Setup(r => r.GetTopUserAttemptAsync(7, 99)).ReturnsAsync(MakeAttempt(score: 1));
-        progressRepo.Setup(r => r.MarkChapterCompletedAsync(7, 1)).Returns(Task.CompletedTask);
-        progressRepo.Setup(r => r.GetChapterProgressesForModuleAsync(7, 10))
-                    .ReturnsAsync([new UserPartProgress { ChapterId = 1, IsCompleted = true }]);
-        moduleRepo.Setup(r => r.GetModuleByIdAsync(10))
-                  .ReturnsAsync(new Module { ModuleId = 10, CourseId = 1, Title = "M", Description = "D" });
-        progressRepo.Setup(r => r.MarkModuleCompletedAsync(7, 10)).Returns(Task.CompletedTask);
 
-        var svc = BuildService(chapterRepo, attemptRepo, quizRepo, progressRepo, moduleRepo);
+        var svc = BuildService(chapterRepo, new Mock<IAttemptRepository>(), new Mock<IQuizRepository>(), progressRepo);
         await svc.MarkAsCompletedAsync(chapterId: 1, userId: 7);
 
-        progressRepo.Verify(r => r.MarkChapterCompletedAsync(7, 1), Times.Once);
+        progressRepo.Verify(r => r.MarkChapterCompletedAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
     // ── MarkAsCompletedAsync — no attempt at all → blocked ──────────────────

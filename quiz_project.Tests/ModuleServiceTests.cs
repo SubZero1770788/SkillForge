@@ -24,7 +24,13 @@ public class ModuleServiceTests
               .Returns(MakeModule());
         mapper.Setup(m => m.ToViewModel(It.IsAny<Module>()))
               .Returns(MakeVm());
-        return new ModuleService(repo.Object, mapper.Object);
+        var fileStorage = new Mock<IFileStorageService>();
+        fileStorage.Setup(f => f.DeleteAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
+
+        var quizRepo = new Mock<IQuizRepository>();
+        quizRepo.Setup(r => r.GetQuizByIdAsync(It.IsAny<int>())).ReturnsAsync((Quiz?)null);
+
+        return new ModuleService(repo.Object, mapper.Object, fileStorage.Object, quizRepo.Object);
     }
 
     // ── CreateAsync ──────────────────────────────────────────────────────────

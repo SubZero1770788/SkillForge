@@ -9,6 +9,7 @@ namespace quiz_project.Interfaces
         Task<EnrollmentStatus> EnrollAsync(int courseId, int userId, bool courseIsPaid);
         Task ApproveAsync(int enrollmentId);
         Task RejectAsync(int enrollmentId);
+        Task ResetToPendingAsync(int enrollmentId);
         Task<EnrollmentListViewModel> GetEnrollmentsAsync(int courseId, string courseTitle);
         Task<List<EnrolledCourseViewModel>> GetUserEnrolledCoursesAsync(int userId);
     }

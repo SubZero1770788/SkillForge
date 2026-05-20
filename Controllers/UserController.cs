@@ -55,7 +55,12 @@ namespace quiz_project.Controllers
             if (ModelState.IsValid)
             {
                 var (success, error) = await userService.RegisterAsync(registerViewModel);
-                return RedirectToAction("Index", "Quiz");
+                if (!success)
+                {
+                    ModelState.AddModelError(string.Empty, error);
+                    return View(registerViewModel);
+                }
+                return RedirectToAction("BrowseCourses", "Menu");
             }
 
             return View(registerViewModel);
@@ -77,9 +82,16 @@ namespace quiz_project.Controllers
                 if (!success)
                 {
                     ModelState.AddModelError(string.Empty, error);
-                    return RedirectToAction("Index", "Quiz");
+                    return View(loginViewModel);
                 }
-                return RedirectToAction("Index", "Quiz");
+
+                var user = await userManager.FindByNameAsync(loginViewModel.UserName);
+                if (user is not null && await userManager.IsInRoleAsync(user, "Creator"))
+                    return RedirectToAction("Index", "Course");
+                if (user is not null && await userManager.IsInRoleAsync(user, "Admin"))
+                    return RedirectToAction("Users", "Admin");
+
+                return RedirectToAction("BrowseCourses", "Menu");
             }
 
             return View(loginViewModel);
@@ -97,12 +109,10 @@ namespace quiz_project.Controllers
         {
             var (success, error) = await userService.ChangePasswordAsync(User.Identity.Name, passwordChangeViewModel);
             if (!success)
-            {
-                ModelState.AddModelError(string.Empty, error);
-                return View("Settings");
-            }
-            TempData["SuccessMessage"] = "Password changed successfully.";
-            return View("Settings");
+                TempData["ErrorMessage"] = error;
+            else
+                TempData["SuccessMessage"] = "Password changed successfully.";
+            return RedirectToAction("Settings");
         }
 
         [HttpPost]
@@ -110,12 +120,10 @@ namespace quiz_project.Controllers
         {
             var (success, error) = await userService.ChangeEmailAsync(User.Identity.Name, emailChangeViewModel);
             if (!success)
-            {
-                ModelState.AddModelError(string.Empty, error);
-                return View("Settings");
-            }
-            TempData["SuccessMessage"] = "Email changed successfully.";
-            return View("Settings");
+                TempData["ErrorMessage"] = error;
+            else
+                TempData["SuccessMessage"] = "Email changed successfully.";
+            return RedirectToAction("Settings");
         }
 
         // ── Creator registration ──────────────────────────────────────────

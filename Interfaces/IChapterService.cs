@@ -11,6 +11,7 @@ namespace quiz_project.Interfaces
         Task DeleteAsync(int chapterId);
         Task MarkAsCompletedAsync(int chapterId, int userId);
         Task TryCompleteModuleByQuizAsync(int quizId, int userId, int score, int totalScore);
+        Task TryCompleteChapterByQuizAsync(int quizId, int userId, int score, int totalScore);
         Task ReorderAsync(List<ReorderItem> items);
     }
 }

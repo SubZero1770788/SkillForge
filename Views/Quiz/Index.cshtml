@@ -22,10 +22,13 @@
     @{
         await Html.RenderPartialAsync("~/Views/Shared/_QuizDetails.cshtml");
     }
+
+    <div id="quiz-pager" data-pager></div>
 </div>
 
 @section Scripts {
     <script>
         initGridSearch('grid-search', '.quiz-card', 'search-empty');
+        initGridPagination('.quiz-card', 'quiz-pager', 9);
     </script>
 }

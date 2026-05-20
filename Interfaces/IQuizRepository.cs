@@ -20,5 +20,6 @@ namespace quiz_project.Interfaces
         Task<Dictionary<int, Quiz>> GetQuizzesByIdsAsync(IEnumerable<int> quizIds);
         Task<Dictionary<(int QuestionId, int AnswerId), int>> GetAnswerSelectionStatsAsync(int quizId);
         Task UpdateQuizScopeAsync(int quizId, QuizScope scope);
+        Task<bool> PublicTitleExistsAsync(string title, int excludeQuizId = 0);
     }
 }

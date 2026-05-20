@@ -5,7 +5,7 @@
 <div class="quiz-grid">
     @foreach (CourseViewModel courseViewModel in Model)
     {
-        <div class="quiz-card"
+        <div class="quiz-card course-card"
              data-search="@((courseViewModel?.Title + " " + courseViewModel?.Description)?.ToLower())">
             <div class="quiz-title">@courseViewModel?.Title</div>
             <div class="quiz-description">@courseViewModel?.Description</div>
@@ -17,12 +17,7 @@
                 </div>
             }
 
-            <div class="quiz-meta">
-                Total Modules: BRAK DANYCH<br />
-                Total Chapters: BRAK DANYCH<br />
-            </div>
-
-            <div class="quiz-buttons no-wrap-buttons">
+<div class="quiz-buttons">
                 @if (currentAction == "Menu")
                 {
                     <a asp-controller="Course" asp-action="Details" asp-route-courseId="@courseViewModel?.CourseId"
@@ -47,7 +42,15 @@
                     </form>
 
                     <a asp-controller="Course" asp-action="Enrollments" asp-route-courseId="@courseViewModel?.CourseId"
-                       class="btn btn-primary">Enrollments</a>
+                       class="btn btn-primary position-relative">
+                        Enrollments
+                        @if (courseViewModel!.PendingEnrollmentsCount > 0)
+                        {
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                @courseViewModel.PendingEnrollmentsCount
+                            </span>
+                        }
+                    </a>
                 }
             </div>
         </div>

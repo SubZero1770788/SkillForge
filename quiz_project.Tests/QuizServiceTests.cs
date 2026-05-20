@@ -29,7 +29,10 @@ public class QuizServiceTests
         attemptRepo.Setup(r => r.GetAllAttemptsAsync(It.IsAny<int>()))
                    .ReturnsAsync(new List<QuizAttempt>());
 
-        return new QuizService(repoMock.Object, mapperMock.Object, validationMock.Object, attemptRepo.Object);
+        var fileStorage = new Mock<IFileStorageService>();
+        fileStorage.Setup(f => f.DeleteAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
+
+        return new QuizService(repoMock.Object, mapperMock.Object, validationMock.Object, attemptRepo.Object, fileStorage.Object);
     }
 
     private static QuizViewModel PublicQuizVm(int questionCount = 5, int totalScore = 50) =>
@@ -137,7 +140,8 @@ public class QuizServiceTests
         var attemptRepo = new Mock<IAttemptRepository>();
         attemptRepo.Setup(r => r.GetAllAttemptsAsync(It.IsAny<int>())).ReturnsAsync(new List<QuizAttempt>());
 
-        var svc = new QuizService(repoMock.Object, mapperMock.Object, validationMock.Object, attemptRepo.Object);
+        var svc = new QuizService(repoMock.Object, mapperMock.Object, validationMock.Object, attemptRepo.Object,
+            new Mock<IFileStorageService>().Object);
         var (success, errors) = await svc.PostEditAsync(new QuizViewModel { Questions = [] }, userId: 1);
 
         success.Should().BeFalse();
@@ -159,7 +163,8 @@ public class QuizServiceTests
         attemptRepo.Setup(r => r.GetAllAttemptsAsync(It.IsAny<int>()))
                    .ReturnsAsync(new List<QuizAttempt> { new() { QuizId = 1, UserId = 7 } });
 
-        var svc = new QuizService(repoMock.Object, mapperMock.Object, validationMock.Object, attemptRepo.Object);
+        var svc = new QuizService(repoMock.Object, mapperMock.Object, validationMock.Object, attemptRepo.Object,
+            new Mock<IFileStorageService>().Object);
         var (success, errors) = await svc.PostEditAsync(PublicQuizVm(), userId: 1);
 
         success.Should().BeFalse();
@@ -176,7 +181,8 @@ public class QuizServiceTests
                    .ReturnsAsync(new List<QuizAttempt> { new() { QuizId = 5, UserId = 7 } });
 
         var svc = new QuizService(repoMock.Object, new Mock<IQuizMapper>().Object,
-            new Mock<IAccessValidationService>().Object, attemptRepo.Object);
+            new Mock<IAccessValidationService>().Object, attemptRepo.Object,
+            new Mock<IFileStorageService>().Object);
 
         (await svc.HasAttemptsAsync(5)).Should().BeTrue();
     }
@@ -189,7 +195,8 @@ public class QuizServiceTests
         attemptRepo.Setup(r => r.GetAllAttemptsAsync(5)).ReturnsAsync(new List<QuizAttempt>());
 
         var svc = new QuizService(repoMock.Object, new Mock<IQuizMapper>().Object,
-            new Mock<IAccessValidationService>().Object, attemptRepo.Object);
+            new Mock<IAccessValidationService>().Object, attemptRepo.Object,
+            new Mock<IFileStorageService>().Object);
 
         (await svc.HasAttemptsAsync(5)).Should().BeFalse();
     }

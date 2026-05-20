@@ -244,14 +244,14 @@ namespace quiz_project.Controllers
                 var user = await userManager.GetUserAsync(User);
                 if (user is null) return RedirectToAction("Register", "User")!;
 
-                var (success, error) = await courseService.CreateAsync(courseViewModel, user.Id);
+                var (success, courseId, error) = await courseService.CreateAsync(courseViewModel, user.Id);
                 if (!success)
                 {
                     ModelState.AddModelError(String.Empty, error);
                     return View(courseViewModel);
                 }
 
-                return RedirectToAction("Index");
+                return RedirectToAction("Edit", new { courseId });
             }
             return View(courseViewModel);
         }
@@ -401,6 +401,22 @@ namespace quiz_project.Controllers
             }
 
             await enrollmentService.RejectAsync(enrollmentId);
+            return RedirectToAction("Enrollments", new { courseId });
+        }
+
+        [HttpPost, ActionName("ResetEnrollment")]
+        public async Task<IActionResult> ResetEnrollmentAsync(int enrollmentId, int courseId)
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+
+            if (!User.IsInRole("Admin"))
+            {
+                var owns = await accessValidationService.UserOwnsCourseAsync(courseId, user);
+                if (!owns) return RedirectToAction("Index");
+            }
+
+            await enrollmentService.ResetToPendingAsync(enrollmentId);
             return RedirectToAction("Enrollments", new { courseId });
         }
 

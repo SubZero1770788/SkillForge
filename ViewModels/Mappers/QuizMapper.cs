@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using quiz_project.Entities;
+using quiz_project.Entities.Definition;
 using quiz_project.Interfaces;
 using quiz_project.ViewModels;
 using static quiz_project.ViewModels.QuizSummaryViewModel;
@@ -74,6 +75,9 @@ namespace quiz_project.ViewModels.Mappers
                         QuestionId = q.QuestionId,
                         Description = q.Description,
                         TotalAttempts = allQuizAttempts.Count(),
+                        Type = q.Type,
+                        ImagePath = q.ImagePath,
+                        Keywords = q.Keywords,
                         Answers = q.Answers.Select(a => new QuizSummaryViewModel.AnswerStats
                         {
                             AnswerId = a.AnswerId,

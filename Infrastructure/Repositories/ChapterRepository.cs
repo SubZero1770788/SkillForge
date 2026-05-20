@@ -41,6 +41,36 @@ namespace quiz_project.Infrastructure.Repositories
             await context.SaveChangesAsync();
         }
 
+        public async Task<Chapter?> GetChapterByQuizIdAsync(int quizId)
+        {
+            return await context.Chapters
+                .FirstOrDefaultAsync(c => c.QuizId == quizId);
+        }
+
+        public async Task<Chapter?> GetChapterByQuizIdForUserAsync(int quizId, int userId)
+        {
+            // Prefer the chapter in a course the user is enrolled in (Approved)
+            var fromEnrollment = await context.Chapters
+                .Where(c => c.QuizId == quizId)
+                .FirstOrDefaultAsync(c =>
+                    context.CourseEnrollments.Any(e =>
+                        e.UserId == userId &&
+                        e.Status == EnrollmentStatus.Approved &&
+                        e.Course.Modules.Any(m =>
+                            m.Chapters.Any(ch => ch.ChapterId == c.ChapterId))));
+
+            if (fromEnrollment is not null) return fromEnrollment;
+
+            // Fall back: chapter in a course the user owns (creator testing their own quiz)
+            return await context.Chapters
+                .Where(c => c.QuizId == quizId)
+                .FirstOrDefaultAsync(c =>
+                    context.Courses.Any(co =>
+                        co.UserId == userId &&
+                        co.Modules.Any(m =>
+                            m.Chapters.Any(ch => ch.ChapterId == c.ChapterId))));
+        }
+
         public async Task<bool> UserHasEnrolledCourseWithQuizAsync(int userId, int quizId)
         {
             var fromChapter = await context.Chapters

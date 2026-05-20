@@ -6,14 +6,24 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using quiz_project.Entities;
+using quiz_project.Entities.Definition;
 using quiz_project.Interfaces;
 using quiz_project.ViewModels;
 
 namespace quiz_project.Services
 {
     public class QuizService(IQuizRepository quizRepository, IQuizMapper quizMapper,
-        IAccessValidationService accessValidationService, IAttemptRepository attemptRepository) : IQuizService
+        IAccessValidationService accessValidationService, IAttemptRepository attemptRepository,
+        IFileStorageService fileStorageService) : IQuizService
     {
+        // Deletes all R2 images attached to quiz questions (silently skips nulls)
+        private async Task DeleteQuizImagesAsync(IEnumerable<Question> questions)
+        {
+            var tasks = questions
+                .Where(q => !string.IsNullOrEmpty(q.ImagePath))
+                .Select(q => fileStorageService.DeleteAsync(q.ImagePath!));
+            await Task.WhenAll(tasks);
+        }
         public async Task<(bool success, string error)> CreateAsync(QuizViewModel quizViewModel, int userId)
         {
             var errors = accessValidationService.EachQuestionHasAnswer(quizViewModel).ToList();
@@ -23,6 +33,9 @@ namespace quiz_project.Services
             if (quizViewModel.IsPublic && (quizViewModel.TotalScore < 50 || quizViewModel.QuestionCount < 5))
                 return (false, "A public quiz needs at least 5 questions with 50 combined points.");
 
+            if (quizViewModel.IsPublic && await quizRepository.PublicTitleExistsAsync(quizViewModel.Title))
+                return (false, $"A public quiz named \"{quizViewModel.Title}\" already exists. Choose a different title.");
+
             var quiz = quizMapper.ToEntity(quizViewModel, userId);
             await quizRepository.CreateQuizAsync(quiz);
             return (true, string.Empty);
@@ -31,8 +44,10 @@ namespace quiz_project.Services
         public async Task<(bool success, string error)> DeleteAsync(int quizId)
         {
             var quiz = await quizRepository.GetQuizByIdAsync(quizId);
+            if (quiz is null) return (false, "Quiz not found.");
+            await DeleteQuizImagesAsync(quiz.Questions);
             await quizRepository.DeleteQuizAsync(quiz);
-            return (true, String.Empty);
+            return (true, string.Empty);
         }
 
         public async Task<QuizViewModel> GetEditAsync(int quizId)
@@ -59,6 +74,9 @@ namespace quiz_project.Services
                     "In order for quiz to be public it needs at least 5 questions with 50 combined points"
                 });
             }
+
+            if (quizViewModel.IsPublic && await quizRepository.PublicTitleExistsAsync(quizViewModel.Title, quizViewModel.QuizId))
+                return (false, new[] { $"A public quiz named \"{quizViewModel.Title}\" already exists. Choose a different title." });
 
             var quiz = quizMapper.ToEntity(quizViewModel, userId);
 

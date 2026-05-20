@@ -45,9 +45,16 @@ namespace quiz_project.Services
 
         public async Task DeleteAsync(string objectKey)
         {
-            await minioClient.RemoveObjectAsync(new RemoveObjectArgs()
-                .WithBucket(_bucket)
-                .WithObject(objectKey));
+            try
+            {
+                await minioClient.RemoveObjectAsync(new RemoveObjectArgs()
+                    .WithBucket(_bucket)
+                    .WithObject(objectKey));
+            }
+            catch
+            {
+                // Silently ignore — object may not exist (already deleted or never uploaded)
+            }
         }
     }
 }

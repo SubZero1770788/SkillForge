@@ -5,10 +5,20 @@
 
     @if (Model.PendingManualGrading > 0)
     {
-        <div class="alert alert-info mt-3">
-            <strong>@Model.PendingManualGrading answer@(Model.PendingManualGrading == 1 ? "" : "s") pending manual review.</strong>
-            Your score may increase once the creator grades your open answers.
-        </div>
+        @if (User.IsInRole("Creator"))
+        {
+            <div class="alert alert-warning mt-3">
+                <strong>You have @Model.PendingManualGrading open answer@(Model.PendingManualGrading == 1 ? "" : "s") waiting for your review.</strong><br />
+                <a asp-controller="Quiz" asp-action="PendingGrading" class="btn btn-sm btn-warning mt-2">Grade your answers now</a>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info mt-3">
+                <strong>@Model.PendingManualGrading answer@(Model.PendingManualGrading == 1 ? "" : "s") pending manual review.</strong>
+                Your score may increase once the creator grades your open answers.
+            </div>
+        }
     }
 
     <div class="card mt-3">
@@ -54,7 +64,22 @@
         </div>
     </div>
 
-    <div class="mt-3 mb-5">
-        <a asp-controller="Course" asp-action="MyCourses" class="btn btn-outline-secondary">Back to courses</a>
+    <div class="mt-3 mb-5 d-flex gap-2 flex-wrap">
+        <a asp-controller="QuizGame" asp-action="ReviewAttempt" asp-route-attemptId="@Model.AttemptId"
+           class="btn btn-outline-primary">Review my answers</a>
+
+        @if (ViewBag.ReturnChapterId is int chapterId)
+        {
+            <a asp-controller="Chapter" asp-action="View" asp-route-chapterId="@chapterId"
+               class="btn btn-outline-secondary">Back to chapter</a>
+        }
+        else if (User.IsInRole("Creator"))
+        {
+            <a asp-controller="Quiz" asp-action="Index" class="btn btn-outline-secondary">Back to quizzes</a>
+        }
+        else
+        {
+            <a asp-controller="Course" asp-action="MyCourses" class="btn btn-outline-secondary">Back to courses</a>
+        }
     </div>
 </div>

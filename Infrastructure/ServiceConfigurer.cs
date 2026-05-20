@@ -55,6 +55,12 @@ namespace quiz_project.Infrastructure
                 opt.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             }).AddEntityFrameworkStores<QuizDb>();
 
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = "/User/Login";
+                options.AccessDeniedPath = "/User/Login";
+            });
+
 
             // Adding session and cookies support
             builder.Services.AddDistributedMemoryCache();

@@ -420,7 +420,7 @@ namespace quiz_project.Controllers
                 QuizTitle = attempt.Quiz?.Title ?? "—",
                 UserName = attempt.User?.UserName ?? "—",
                 CurrentScore = attempt.Score,
-                Answers = attempt.OpenAnswerRecords.Select(oa =>
+                Answers = attempt.OpenAnswerRecords.Where(oa => !oa.IsGraded).Select(oa =>
                 {
                     var q = quiz?.Questions.FirstOrDefault(x => x.QuestionId == oa.QuestionId);
                     return new OpenAnswerGradeItem
