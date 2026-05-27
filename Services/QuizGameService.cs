@@ -39,7 +39,6 @@ namespace quiz_project.Services
             var topScores = allQuizAttempts.OrderByDescending(aqa => aqa.Score).Take(10).ToList();
             var users = await userManager.Users.ToDictionaryAsync(u => u.Id, u => u.UserName);
 
-            // Count pending manual grading for this attempt
             var pendingGrading = latestAttempt.OpenAnswerRecords?.Count(r => !r.IsGraded) ?? 0;
 
             var quizSummaryViewModel = quizMapper.ToQuizSummaryViewModel(quizDefinition, topScores, users, latestAttempt, bestPlayerScore);
@@ -270,9 +269,9 @@ namespace quiz_project.Services
                                 ManualScore = matched ? question.QuestionScore : 0
                             });
                         }
-                        else // Manual
+                        else 
                         {
-                            // Score will be assigned later by the creator
+
                             openAnswerRecords.Add(new OpenAnswerRecord
                             {
                                 QuestionId = question.QuestionId,
@@ -298,7 +297,6 @@ namespace quiz_project.Services
             await onGoingQuizRepository.DeleteAsync(userId, quizId);
             await attemptRepository.CreateAsync(attempt);
 
-            // Post-attempt hooks: module completion + spaced-repetition reminder update
             var quiz = await quizRepository.GetQuizByIdAsync(quizId);
             if (quiz is not null)
             {

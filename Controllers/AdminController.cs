@@ -17,8 +17,6 @@ namespace quiz_project.Controllers
         UserManager<User> userManager,
         ICreatorApplicationRepository applicationRepository) : Controller
     {
-        // ── Users ─────────────────────────────────────────────────────────
-
         [HttpGet, ActionName("Users")]
         public async Task<IActionResult> UsersAsync()
         {
@@ -32,8 +30,8 @@ namespace quiz_project.Controllers
                 items.Add(new AdminUserItem
                 {
                     UserId = u.Id,
-                    UserName = u.UserName ?? "—",
-                    Email = u.Email ?? "—",
+                    UserName = u.UserName ?? "-",
+                    Email = u.Email ?? "-",
                     Roles = roles,
                     IsLockedOut = lockout
                 });
@@ -56,7 +54,6 @@ namespace quiz_project.Controllers
             var user = await userManager.FindByIdAsync(userId.ToString());
             if (user is null) return NotFound();
 
-            // Prevent admins from demoting themselves
             if (User.Identity?.Name == user.UserName && role == "Admin" && !grant)
             {
                 TempData["Error"] = "You cannot remove your own Admin role.";
@@ -100,8 +97,6 @@ namespace quiz_project.Controllers
             await userManager.ResetAccessFailedCountAsync(user);
             return RedirectToAction("Users");
         }
-
-        // ── Creator applications ──────────────────────────────────────────
 
         [HttpGet, ActionName("Applications")]
         public async Task<IActionResult> ApplicationsAsync()
@@ -157,8 +152,8 @@ namespace quiz_project.Controllers
         {
             ApplicationId = a.Id,
             UserId = a.UserId,
-            UserName = a.User?.UserName ?? "—",
-            Email = a.User?.Email ?? "—",
+            UserName = a.User?.UserName ?? "-",
+            Email = a.User?.Email ?? "-",
             ContactName = a.ContactName,
             Description = a.Description,
             Status = a.Status,

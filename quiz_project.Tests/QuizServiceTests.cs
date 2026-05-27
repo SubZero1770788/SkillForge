@@ -24,7 +24,7 @@ public class QuizServiceTests
         validationMock.Setup(v => v.EachQuestionHasAnswer(It.IsAny<QuizViewModel>()))
                       .Returns(new List<string>());
 
-        // No attempts by default — quiz is unlocked for editing
+        // No attempts by default-quiz is unlocked for editing
         var attemptRepo = new Mock<IAttemptRepository>();
         attemptRepo.Setup(r => r.GetAllAttemptsAsync(It.IsAny<int>()))
                    .ReturnsAsync(new List<QuizAttempt>());
@@ -51,7 +51,6 @@ public class QuizServiceTests
                 .ToList()
         };
 
-    // ── CreateAsync ──────────────────────────────────────────────────────────
 
     [Fact]
     public async Task Create_ValidPublicQuiz_Succeeds()
@@ -93,7 +92,9 @@ public class QuizServiceTests
         var svc = BuildService();
         var vm = new QuizViewModel
         {
-            Title = "T", Description = "D", IsPublic = false,
+            Title = "T",
+            Description = "D",
+            IsPublic = false,
             Questions = [new QuestionViewModel
             {
                 Description = "Q", QuestionScore = 10,
@@ -105,7 +106,6 @@ public class QuizServiceTests
         success.Should().BeTrue();
     }
 
-    // ── PostEditAsync ────────────────────────────────────────────────────────
 
     [Fact]
     public async Task PostEdit_ValidPublicQuiz_Succeeds()
@@ -148,7 +148,6 @@ public class QuizServiceTests
         errors.Should().ContainSingle();
     }
 
-    // ── Attempt lock ─────────────────────────────────────────────────────────
 
     [Fact]
     public async Task PostEdit_QuizHasAttempts_BlocksEdit()

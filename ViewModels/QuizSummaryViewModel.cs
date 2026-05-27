@@ -13,7 +13,6 @@ namespace quiz_project.ViewModels
         public int Score { get; set; }
         public int TotalScore { get; set; }
         public int BestScore { get; set; }
-        /// <summary>Number of open answers still waiting for manual grading.</summary>
         public int PendingManualGrading { get; set; }
         [Range(0, 10)]
         public List<TopScore> TopPlayerScores { get; set; }

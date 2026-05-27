@@ -10,7 +10,7 @@ namespace quiz_project.Tests;
 
 public class ChapterServiceTests
 {
-    // ── Helpers ──────────────────────────────────────────────────────────────
+    // ── Helpers 
 
     private static Chapter MakeChapter(int id = 1, bool requireQuizPass = false, int? quizId = null) =>
         new() { ChapterId = id, ModuleId = 10, Order = 1, Title = "Chapter", RequireQuizPass = requireQuizPass, QuizId = quizId };
@@ -55,7 +55,7 @@ public class ChapterServiceTests
             fileStorage.Object);
     }
 
-    // ── MarkAsCompletedAsync — no quiz gate ──────────────────────────────────
+    // ── MarkAsCompletedAsync-no quiz gate 
 
     [Fact]
     public async Task MarkAsCompleted_NoRequireQuizPass_MarksChapterCompleted()
@@ -80,7 +80,7 @@ public class ChapterServiceTests
         progressRepo.Verify(r => r.MarkChapterCompletedAsync(7, 1), Times.Once);
     }
 
-    // ── MarkAsCompletedAsync — quiz not passed → blocked ────────────────────
+    // ── MarkAsCompletedAsync-quiz not passed → blocked
 
     [Fact]
     public async Task MarkAsCompleted_RequireQuizPass_QuizFailed_DoesNotMark()
@@ -93,7 +93,6 @@ public class ChapterServiceTests
 
         chapterRepo.Setup(r => r.GetChapterByIdAsync(1)).ReturnsAsync(chapter);
         quizRepo.Setup(r => r.GetQuizByIdAsync(99)).ReturnsAsync(MakeQuiz(passPercentage: 80));
-        // Score 50/100 = 50% < 80% → not passed
         attemptRepo.Setup(r => r.GetTopUserAttemptAsync(7, 99)).ReturnsAsync(MakeAttempt(score: 50));
 
         var svc = BuildService(chapterRepo, attemptRepo, quizRepo, progressRepo);
@@ -101,10 +100,6 @@ public class ChapterServiceTests
 
         progressRepo.Verify(r => r.MarkChapterCompletedAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
-
-    // ── MarkAsCompletedAsync — chapter has quiz → manual completion always blocked ──
-    // Chapters with a quiz can only be completed via TryCompleteChapterByQuizAsync
-    // (called automatically by the quiz game engine after a successful attempt).
 
     [Fact]
     public async Task MarkAsCompleted_ChapterHasQuiz_BlocksManualCompletion_EvenWhenQuizPassed()
@@ -118,7 +113,6 @@ public class ChapterServiceTests
         var svc = BuildService(chapterRepo, new Mock<IAttemptRepository>(), new Mock<IQuizRepository>(), progressRepo);
         await svc.MarkAsCompletedAsync(chapterId: 1, userId: 7);
 
-        // Manual completion must never fire — quiz game handles it
         progressRepo.Verify(r => r.MarkChapterCompletedAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
@@ -137,7 +131,6 @@ public class ChapterServiceTests
         progressRepo.Verify(r => r.MarkChapterCompletedAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
-    // ── MarkAsCompletedAsync — no attempt at all → blocked ──────────────────
 
     [Fact]
     public async Task MarkAsCompleted_RequireQuizPass_NoAttempt_DoesNotMark()

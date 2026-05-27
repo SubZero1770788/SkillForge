@@ -139,7 +139,7 @@ namespace quiz_project.Infrastructure
                     new Course{
                         CourseId = 3,
                         Title = "C# Programming Fundamentals",
-                        Description = "From basic syntax to advanced async and LINQ — a complete C# learning path.",
+                        Description = "From basic syntax to advanced async and LINQ-a complete C# learning path.",
                         IsPublic = true,
                         IsSequential = true,
                         UserId = 5
@@ -154,7 +154,7 @@ namespace quiz_project.Infrastructure
                     new Quiz{
                         QuizId = 1,
                         Title = "General Knowledge",
-                        Description = "A broad test of world facts — capitals, science, history and more.",
+                        Description = "A broad test of world facts-capitals, science, history and more.",
                         IsPublic = false,
                         UserId = 5,
                         TotalScore = 200,
@@ -3737,9 +3737,9 @@ namespace quiz_project.Infrastructure
 
                 var chapters = new List<Chapter>
                 {
-                    // Course 1 — European Geography & History
+                    // Course 1-European Geography & History
                     new Chapter{ ChapterId = 1, ModuleId = 1, Order = 0, Title = "Introduction to Western Europe",
-                        Content = "Western Europe is home to some of the world's most visited countries — France, Germany, Spain, Italy and more. " +
+                        Content = "Western Europe is home to some of the world's most visited countries-France, Germany, Spain, Italy and more. " +
                                   "The region is known for its rich history, cultural diversity and political integration through the European Union. " +
                                   "Key geographical features include the Alps, the Rhine, and the Atlantic coastline." },
                     new Chapter{ ChapterId = 2, ModuleId = 1, Order = 1, Title = "European Geography Quiz", QuizId = 4 },
@@ -3750,7 +3750,7 @@ namespace quiz_project.Infrastructure
                                   "Topics include world capitals, notable inventions, historical events and natural phenomena." },
                     new Chapter{ ChapterId = 4, ModuleId = 2, Order = 1, Title = "General Knowledge Quiz", QuizId = 1 },
 
-                    // Course 2 — Music & Gaming Culture
+                    // Course 2-Music & Gaming Culture
                     new Chapter{ ChapterId = 5, ModuleId = 3, Order = 0, Title = "The History of Power Metal",
                         Content = "Power metal emerged in the mid-1980s as a subgenre of heavy metal, characterized by fast tempos, " +
                                   "high-pitched vocals and epic, fantasy-themed lyrics. Bands like Helloween, Blind Guardian and DragonForce " +
@@ -3772,7 +3772,7 @@ namespace quiz_project.Infrastructure
                                   "across nine generations, each introduced in a new region of the Pokémon world." },
                     new Chapter{ ChapterId = 10, ModuleId = 5, Order = 1, Title = "Pokémon Quiz", QuizId = 5 },
 
-                    // Course 3 — C# Programming Fundamentals
+                    // Course 3-C# Programming Fundamentals
                     new Chapter{ ChapterId = 11, ModuleId = 6, Order = 0, Title = "C# Basics & Object-Oriented Programming",
                         Content = "C# is a strongly-typed, object-oriented language developed by Microsoft as part of .NET. " +
                                   "Core OOP concepts include encapsulation, inheritance, polymorphism and abstraction. " +
@@ -3786,7 +3786,7 @@ namespace quiz_project.Infrastructure
                     new Chapter{ ChapterId = 13, ModuleId = 7, Order = 0, Title = "Async/Await & Delegates",
                         Content = "Asynchronous programming in C# uses the async/await pattern built on Task and Task<T>. " +
                                   "This allows non-blocking I/O operations without manually managing threads. " +
-                                  "Delegates are type-safe function pointers — the foundation of events and callbacks in C#. " +
+                                  "Delegates are type-safe function pointers-the foundation of events and callbacks in C#. " +
                                   "Common delegate types include Action, Func and Predicate. Lambda expressions provide a concise syntax for delegates." },
                     new Chapter{ ChapterId = 14, ModuleId = 7, Order = 1, Title = "C# Advanced Quiz", QuizId = 7 },
                 };

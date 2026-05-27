@@ -33,8 +33,6 @@ public class ModuleServiceTests
         return new ModuleService(repo.Object, mapper.Object, fileStorage.Object, quizRepo.Object);
     }
 
-    // ── CreateAsync ──────────────────────────────────────────────────────────
-
     [Fact]
     public async Task Create_CallsRepositoryCreateOnce()
     {
@@ -49,7 +47,6 @@ public class ModuleServiceTests
         repo.Verify(r => r.CreateModuleAsync(It.IsAny<Module>()), Times.Once);
     }
 
-    // ── GetEditAsync ─────────────────────────────────────────────────────────
 
     [Fact]
     public async Task GetEdit_ExistingModule_ReturnsViewModel()
@@ -75,7 +72,6 @@ public class ModuleServiceTests
         result.Should().BeNull();
     }
 
-    // ── PostEditAsync ────────────────────────────────────────────────────────
 
     [Fact]
     public async Task PostEdit_NonExistentModule_ReturnsError()
@@ -105,7 +101,6 @@ public class ModuleServiceTests
         repo.Verify(r => r.UpdateModuleAsync(It.IsAny<Module>()), Times.Once);
     }
 
-    // ── DeleteAsync ──────────────────────────────────────────────────────────
 
     [Fact]
     public async Task Delete_NonExistentModule_DoesNotCallDeleteOnRepository()
@@ -133,7 +128,6 @@ public class ModuleServiceTests
         repo.Verify(r => r.DeleteModuleAsync(module), Times.Once);
     }
 
-    // ── ReorderAsync ─────────────────────────────────────────────────────────
 
     [Fact]
     public async Task Reorder_UpdatesOrderForEachItem()

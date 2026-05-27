@@ -16,7 +16,6 @@ namespace quiz_project.Services
         IAccessValidationService accessValidationService, IAttemptRepository attemptRepository,
         IFileStorageService fileStorageService) : IQuizService
     {
-        // Deletes all R2 images attached to quiz questions (silently skips nulls)
         private async Task DeleteQuizImagesAsync(IEnumerable<Question> questions)
         {
             var tasks = questions

@@ -53,7 +53,7 @@ namespace quiz_project.Services
             }
             catch
             {
-                // Silently ignore — object may not exist (already deleted or never uploaded)
+
             }
         }
     }

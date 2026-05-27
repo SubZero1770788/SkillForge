@@ -27,7 +27,7 @@ public class AccessValidationServiceTests
     private static QuestionViewModel OpenQuestion(QuestionType type = QuestionType.FillInTheBlank) =>
         new() { Type = type, Description = "Describe it" };
 
-    // ── open questions are always valid ─────────────────────────────────────
+    // ── open questions are always valid
 
     [Theory]
     [InlineData(QuestionType.FillInTheBlank)]
@@ -40,7 +40,7 @@ public class AccessValidationServiceTests
         svc.EachQuestionHasAnswer(vm).Should().BeEmpty();
     }
 
-    // ── closed questions require ≥2 answers ─────────────────────────────────
+    // ── closed questions require ≥2 answers 
 
     [Fact]
     public void ClosedQuestion_SingleAnswer_ProducesError()
@@ -53,7 +53,7 @@ public class AccessValidationServiceTests
               .Which.Should().Contain("at least 2 answers");
     }
 
-    // ── closed questions require at least one correct answer ─────────────────
+    // ── closed questions require at least one correct answer
 
     [Fact]
     public void ClosedQuestion_NoCorrectAnswer_ProducesError()
@@ -66,7 +66,7 @@ public class AccessValidationServiceTests
               .Which.Should().Contain("at least one answer marked as correct");
     }
 
-    // ── valid closed question ────────────────────────────────────────────────
+    // ── valid closed question
 
     [Fact]
     public void ValidClosedQuestion_ProducesNoErrors()
@@ -77,7 +77,7 @@ public class AccessValidationServiceTests
         svc.EachQuestionHasAnswer(vm).Should().BeEmpty();
     }
 
-    // ── error references correct question number ─────────────────────────────
+    // ── error references correct question number
 
     [Fact]
     public void ErrorMessage_ContainsQuestionNumber()
@@ -93,7 +93,7 @@ public class AccessValidationServiceTests
               .Which.Should().StartWith("Question 2:");
     }
 
-    // ── mixed quiz (open + closed) ───────────────────────────────────────────
+    // ── mixed quiz (open + closed) 
 
     [Fact]
     public void MixedQuestions_ValidAll_ProducesNoErrors()

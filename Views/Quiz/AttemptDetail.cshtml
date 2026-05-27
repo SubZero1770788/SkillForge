@@ -3,7 +3,7 @@
 
 <div class="stats-wrapper">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3>Attempt detail — <strong>@Model.UserName</strong></h3>
+        <h3>Attempt detail-<strong>@Model.UserName</strong></h3>
         @if (Model.CourseId.HasValue)
         {
             <a asp-action="UserAttempts"
@@ -66,7 +66,7 @@
                 }
                 else if (q.Type == QuestionType.FillInTheBlank)
                 {
-                    <p class="mb-1"><strong>Student answer:</strong> <em>@(string.IsNullOrWhiteSpace(q.OpenText) ? "—" : q.OpenText)</em></p>
+                    <p class="mb-1"><strong>Student answer:</strong> <em>@(string.IsNullOrWhiteSpace(q.OpenText) ? "-" : q.OpenText)</em></p>
                     @if (!string.IsNullOrEmpty(q.Keywords))
                     {
                         <p class="text-muted small mb-0">Accepted: @q.Keywords</p>
@@ -82,7 +82,7 @@
                         </div>
                     }
                     <p class="mb-1"><strong>Student answer:</strong></p>
-                    <div class="alert alert-light border">@(string.IsNullOrWhiteSpace(q.OpenText) ? "—" : q.OpenText)</div>
+                    <div class="alert alert-light border">@(string.IsNullOrWhiteSpace(q.OpenText) ? "-" : q.OpenText)</div>
                     @if (q.IsGraded)
                     {
                         <p class="text-success mb-0"><strong>Graded:</strong> @q.ManualScore pts</p>

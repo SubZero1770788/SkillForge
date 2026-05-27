@@ -202,8 +202,6 @@ namespace quiz_project.Controllers
             return View(quizViewModel);
         }
 
-        // ── Per-user attempt history ──────────────────────────────────────────
-
         [HttpGet, ActionName("UserAttempts")]
         [Authorize(Roles = "Creator,Admin")]
         public async Task<IActionResult> UserAttemptsAsync(int userId, int courseId)
@@ -211,7 +209,6 @@ namespace quiz_project.Controllers
             var creator = await userManager.GetUserAsync(User);
             if (creator is null) return RedirectToAction("Register", "User")!;
 
-            // Load course + all quiz IDs belonging to it
             var modules = await GetCourseModulesAsync(courseId);
             if (modules is null) return NotFound();
 
@@ -223,7 +220,6 @@ namespace quiz_project.Controllers
             var attempts = await attemptRepository.GetUserAttemptsForQuizzesAsync(userId, allQuizIds);
             var quizDefs = await quizRepository.GetQuizzesByIdsAsync(allQuizIds);
 
-            // Build context map: quizId → "Chapter: XYZ" or "Module: XYZ"
             var contextMap = new Dictionary<int, string>();
             foreach (var m in modules)
             {
@@ -268,7 +264,6 @@ namespace quiz_project.Controllers
             var attempt = await attemptRepository.GetAttemptFullDetailAsync(attemptId);
             if (attempt is null) return NotFound();
 
-            // Verify creator owns the quiz
             if (!User.IsInRole("Admin") && !await accessValidationService.UserOwnsQuizAsync(attempt.QuizId, creator))
                 return Forbid();
 
@@ -279,10 +274,8 @@ namespace quiz_project.Controllers
 
             var questions = quiz.Questions.Select(q =>
             {
-                // For open questions, find the OpenAnswerRecord
                 var openRecord = attempt.OpenAnswerRecords.FirstOrDefault(r => r.QuestionId == q.QuestionId);
 
-                // For choice questions, calculate earned score
                 int earned = 0;
                 bool correct = false;
                 if (q.Type == Entities.Definition.QuestionType.MultipleChoice || q.Type == Entities.Definition.QuestionType.SingleChoice)
@@ -339,8 +332,6 @@ namespace quiz_project.Controllers
             return modules?.OrderBy(m => m.Order).ToList();
         }
 
-        // ── Image upload for OpenWithImage questions ──────────────────────────
-
         [HttpPost, ActionName("UploadQuestionImage")]
         [Authorize(Roles = "Creator")]
         public async Task<IActionResult> UploadQuestionImageAsync(IFormFile file)
@@ -357,7 +348,7 @@ namespace quiz_project.Controllers
         {
             if (string.IsNullOrWhiteSpace(path)) return NotFound();
             var (stream, contentType, _) = await fileStorageService.DownloadAsync(path);
-            // Determine content type from extension
+
             var ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
             var mime = ext switch
             {
@@ -368,8 +359,6 @@ namespace quiz_project.Controllers
             };
             return File(stream, mime);
         }
-
-        // ── Manual grading ────────────────────────────────────────────────────
 
         [HttpGet, ActionName("PendingGrading")]
         [Authorize(Roles = "Creator")]
@@ -388,8 +377,8 @@ namespace quiz_project.Controllers
                 Attempts = attempts.Select(a => new PendingAttemptItem
                 {
                     AttemptId = a.QuizAttemptId,
-                    QuizTitle = a.Quiz?.Title ?? "—",
-                    UserName = a.User?.UserName ?? "—",
+                    QuizTitle = a.Quiz?.Title ?? "-",
+                    UserName = a.User?.UserName ?? "-",
                     UngradedCount = a.OpenAnswerRecords.Count(r => !r.IsGraded),
                     TotalOpenAnswers = a.OpenAnswerRecords.Count
                 }).ToList()
@@ -408,7 +397,6 @@ namespace quiz_project.Controllers
             var attempt = await attemptRepository.GetAttemptWithOpenAnswersAsync(attemptId);
             if (attempt is null) return NotFound();
 
-            // Verify creator owns the quiz
             if (!await accessValidationService.UserOwnsQuizAsync(attempt.QuizId, user))
                 return Forbid();
 
@@ -417,8 +405,8 @@ namespace quiz_project.Controllers
             var vm = new GradeAttemptViewModel
             {
                 AttemptId = attempt.QuizAttemptId,
-                QuizTitle = attempt.Quiz?.Title ?? "—",
-                UserName = attempt.User?.UserName ?? "—",
+                QuizTitle = attempt.Quiz?.Title ?? "-",
+                UserName = attempt.User?.UserName ?? "-",
                 CurrentScore = attempt.Score,
                 Answers = attempt.OpenAnswerRecords.Where(oa => !oa.IsGraded).Select(oa =>
                 {
@@ -426,7 +414,7 @@ namespace quiz_project.Controllers
                     return new OpenAnswerGradeItem
                     {
                         OpenAnswerRecordId = oa.Id,
-                        QuestionDescription = q?.Description ?? "—",
+                        QuestionDescription = q?.Description ?? "-",
                         ImagePath = q?.ImagePath,
                         MaxScore = q?.QuestionScore ?? 0,
                         OpenText = oa.OpenText,
@@ -451,14 +439,13 @@ namespace quiz_project.Controllers
             if (!await accessValidationService.UserOwnsQuizAsync(attempt.QuizId, user))
                 return Forbid();
 
-            // Calculate score delta: (new scores) - (old scores) for the graded records
             int oldSum = 0;
             var records = new List<OpenAnswerRecord>();
             for (int i = 0; i < recordIds.Count; i++)
             {
                 var rec = attempt.OpenAnswerRecords.FirstOrDefault(r => r.Id == recordIds[i]);
                 if (rec is null) continue;
-                oldSum += rec.ManualScore ?? 0;   // capture old value before overwriting
+                oldSum += rec.ManualScore ?? 0;
                 rec.ManualScore = scores.ElementAtOrDefault(i) ?? 0;
                 rec.IsGraded = true;
                 records.Add(rec);

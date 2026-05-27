@@ -48,7 +48,6 @@ namespace quiz_project.Controllers
             return View();
         }
 
-        // This is a redirect after POST in order to combat the page refresh issue when submitting data in MVC
         [HttpPost, AllowAnonymous]
         public async Task<IActionResult> Register(RegisterViewModel registerViewModel)
         {
@@ -72,7 +71,6 @@ namespace quiz_project.Controllers
             return View();
         }
 
-        // This is a redirect after POST in order to combat the page refresh issue when submitting data in MVC
         [HttpPost, AllowAnonymous]
         public async Task<IActionResult> Login(LoginViewModel loginViewModel)
         {
@@ -125,8 +123,6 @@ namespace quiz_project.Controllers
                 TempData["SuccessMessage"] = "Email changed successfully.";
             return RedirectToAction("Settings");
         }
-
-        // ── Creator registration ──────────────────────────────────────────
 
         [HttpGet, AllowAnonymous, ActionName("RegisterCreator")]
         public IActionResult RegisterCreatorGet() => View();

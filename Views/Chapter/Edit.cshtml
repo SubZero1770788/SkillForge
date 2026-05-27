@@ -34,7 +34,7 @@
                     <div class="mb-1">
                         <a asp-action="Download" asp-route-chapterId="@Model.ChapterId"
                            class="btn btn-outline-secondary btn-sm" target="_blank">
-                            Current file — download
+                            Current file-download
                         </a>
                         <small class="text-muted ms-2">Upload a new file to replace it.</small>
                     </div>
@@ -47,7 +47,7 @@
                 <label asp-for="QuizId">Linked quiz (optional)</label>
                 @* RequireQuizPass shown below after quiz selection *@
                 <select asp-for="QuizId" class="form-select">
-                    <option value="">— none —</option>
+                    <option value="">- none-</option>
                     @if (ViewBag.AvailableQuizzes != null)
                     {
                         @foreach (var quiz in ViewBag.AvailableQuizzes)

@@ -13,9 +13,6 @@ namespace quiz_project.Services
         IAttemptRepository attemptRepository,
         IQuizRepository quizRepository) : IQuizReminderService
     {
-        // Spaced-repetition schedule (days between reviews):
-        //   index 0 → 3 d, 1 → 7 d, 2 → 14 d, 3 → 24 d, 4 → 35 d, 5 → 46 d
-        //   index 6+ → 46 + (index−5)×11 d  (57, 68, 79, …)
         private static readonly int[] BaseIntervals = { 3, 7, 14, 24, 35, 46 };
 
         public static int GetIntervalDays(int index)
@@ -47,16 +44,14 @@ namespace quiz_project.Services
         public async Task OnQuizAttemptFinishedAsync(int userId, int quizId, bool passed)
         {
             var reminder = await reminderRepository.GetAsync(userId, quizId);
-            if (reminder is null) return; // user hasn't added this to reminders
+            if (reminder is null) return;
 
             if (passed)
             {
-                // Advance to the next interval
                 reminder.IntervalIndex++;
             }
             else
             {
-                // Failed — reset to first interval
                 reminder.IntervalIndex = 0;
             }
 
@@ -66,14 +61,11 @@ namespace quiz_project.Services
 
         public async Task<MyQuizzesViewModel> GetMyQuizzesAsync(int userId)
         {
-            // Load all attempts for this user (best per quiz)
             var allAttempts = await attemptRepository.GetAllBestAttemptsForUserAsync(userId);
 
-            // Load reminder map
             var reminders = await reminderRepository.GetByUserAsync(userId);
             var reminderMap = reminders.ToDictionary(r => r.QuizId);
 
-            // Build quiz items, loading quiz definitions for those missing nav data
             var quizIds = allAttempts.Select(a => a.QuizId).ToList();
             var quizDefs = await quizRepository.GetQuizzesByIdsAsync(quizIds);
 
@@ -104,7 +96,7 @@ namespace quiz_project.Services
                     CurrentIntervalDays = GetIntervalDays(idx)
                 };
             })
-            .OrderBy(q => q.IsDue ? 0 : 1)   // due items first
+            .OrderBy(q => q.IsDue ? 0 : 1)
             .ThenBy(q => q.NextReviewDate ?? DateTime.MaxValue)
             .ToList();
 

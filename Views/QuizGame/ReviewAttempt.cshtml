@@ -3,7 +3,7 @@
 
 <div class="stats-wrapper">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3>My answers — <strong>@Model.QuizTitle</strong></h3>
+        <h3>My answers-<strong>@Model.QuizTitle</strong></h3>
         @if (ViewBag.ReturnQuizId is int returnQuizId)
         {
             <a asp-controller="QuizGame" asp-action="Summary" asp-route-quizId="@returnQuizId"
@@ -68,7 +68,7 @@
                 {
                     <p class="mb-1">
                         <strong>Your answer:</strong>
-                        <em>@(string.IsNullOrWhiteSpace(q.OpenText) ? "—" : q.OpenText)</em>
+                        <em>@(string.IsNullOrWhiteSpace(q.OpenText) ? "-" : q.OpenText)</em>
                         @if (q.EarnedScore == q.MaxScore)
                         {
                             <span class="text-success ms-2">✅ Correct</span>
@@ -94,7 +94,7 @@
                     }
                     <p class="mb-1"><strong>Your answer:</strong></p>
                     <div class="alert alert-light border">
-                        @(string.IsNullOrWhiteSpace(q.OpenText) ? "—" : q.OpenText)
+                        @(string.IsNullOrWhiteSpace(q.OpenText) ? "-" : q.OpenText)
                     </div>
                     @if (q.IsGraded)
                     {
@@ -104,7 +104,7 @@
                     }
                     else
                     {
-                        <p class="text-warning mb-0">⏳ Awaiting manual review — score may change</p>
+                        <p class="text-warning mb-0">⏳ Awaiting manual review-score may change</p>
                     }
                 }
             </div>

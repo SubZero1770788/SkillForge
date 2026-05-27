@@ -9,7 +9,6 @@ namespace quiz_project.Services
         IChapterMapper chapterMapper, IAttemptRepository attemptRepository,
         IQuizRepository quizRepository, IFileStorageService fileStorageService) : IChapterService
     {
-        // Returns true if the user's best score for quizId satisfies the pass threshold.
         private static bool IsQuizPassed(QuizAttempt? best, Quiz? quiz)
         {
             if (best is null || quiz is null) return false;
@@ -41,14 +40,12 @@ namespace quiz_project.Services
                 var index = chapters.FindIndex(c => c.ChapterId == chapterId);
                 if (index > 0)
                 {
-                    // Not the first chapter — previous chapter in same module must be complete
                     var previousChapter = chapters[index - 1];
                     var previousProgress = await progressRepository.GetChapterProgressAsync(userId, previousChapter.ChapterId);
                     isLocked = previousProgress?.IsCompleted != true;
                 }
                 else
                 {
-                    // First chapter of this module — previous module (by Order) must be complete
                     var allModules = (await moduleRepository.GetModulesByCourseIdAsync(module.CourseId))
                         .OrderBy(m => m.Order)
                         .ToList();
@@ -62,7 +59,6 @@ namespace quiz_project.Services
                 }
             }
 
-            // Check if the chapter quiz is passed (for the RequireQuizPass UI gate)
             bool quizPassed = false;
             if (chapter.QuizId.HasValue)
             {
@@ -105,11 +101,9 @@ namespace quiz_project.Services
             var chapter = await chapterRepository.GetChapterByIdAsync(chapterId);
             if (chapter is null) return;
 
-            // Remove file attachment from R2 (if any)
             if (!string.IsNullOrEmpty(chapter.FilePath))
                 await fileStorageService.DeleteAsync(chapter.FilePath);
 
-            // Remove question images from R2 (if chapter has a quiz with images)
             if (chapter.QuizId.HasValue)
             {
                 var quiz = await quizRepository.GetQuizByIdAsync(chapter.QuizId.Value);
@@ -136,7 +130,6 @@ namespace quiz_project.Services
             var course = await courseRepository.GetCourseByIdAsync(module.CourseId);
             if (course is null) return;
 
-            // Gate: sequential course — previous chapter / previous module must be complete
             if (course.IsSequential)
             {
                 var chapters = (await chapterRepository.GetChaptersByModuleIdAsync(chapter.ModuleId))
@@ -163,7 +156,6 @@ namespace quiz_project.Services
                 }
             }
 
-            // If chapter has a quiz, it can only be completed by passing the quiz — block manual completion
             if (chapter.QuizId.HasValue) return;
 
             await progressRepository.MarkChapterCompletedAsync(userId, chapterId);
@@ -174,9 +166,8 @@ namespace quiz_project.Services
 
             if (moduleChapters.All(c => completedIds.Contains(c.ChapterId)))
             {
-                // Gate: module requires passing its own quiz before being marked complete
                 if (module.RequireQuizPass && module.QuizId.HasValue)
-                    return; // Module quiz must be passed separately — handled by TryCompleteModuleByQuizAsync
+                    return;
 
                 await progressRepository.MarkModuleCompletedAsync(userId, chapter.ModuleId);
             }
@@ -187,16 +178,13 @@ namespace quiz_project.Services
             var module = await moduleRepository.GetModuleByQuizIdAsync(quizId);
             if (module is null || !module.RequireQuizPass) return;
 
-            // Verify pass threshold using the quiz definition
             var quiz = await quizRepository.GetQuizByIdAsync(quizId);
             if (quiz is null) return;
 
-            // Build a fake attempt wrapper just to reuse the helper
             var passed = quiz.PassPercentage == 0
                 || (totalScore > 0 && (double)score / totalScore * 100 >= quiz.PassPercentage);
             if (!passed) return;
 
-            // All chapters in the module must already be completed
             var chapters = (await chapterRepository.GetChaptersByModuleIdAsync(module.ModuleId)).ToList();
             if (!chapters.Any()) return;
             var progresses = await progressRepository.GetChapterProgressesForModuleAsync(userId, module.ModuleId);
@@ -209,7 +197,7 @@ namespace quiz_project.Services
         public async Task TryCompleteChapterByQuizAsync(int quizId, int userId, int score, int totalScore)
         {
             var chapter = await chapterRepository.GetChapterByQuizIdAsync(quizId);
-            if (chapter is null) return; // quiz not linked to any chapter
+            if (chapter is null) return;
 
             var quiz = await quizRepository.GetQuizByIdAsync(quizId);
             if (quiz is null) return;
@@ -224,7 +212,6 @@ namespace quiz_project.Services
             var course = await courseRepository.GetCourseByIdAsync(module.CourseId);
             if (course is null) return;
 
-            // Sequential guard — same logic as MarkAsCompletedAsync
             if (course.IsSequential)
             {
                 var orderedChapters = (await chapterRepository.GetChaptersByModuleIdAsync(chapter.ModuleId))
@@ -250,11 +237,10 @@ namespace quiz_project.Services
 
             await progressRepository.MarkChapterCompletedAsync(userId, chapter.ChapterId);
 
-            // If all chapters in module are now done, try to complete the module too
             var moduleChapters = (await chapterRepository.GetChaptersByModuleIdAsync(chapter.ModuleId)).ToList();
             var progresses = await progressRepository.GetChapterProgressesForModuleAsync(userId, chapter.ModuleId);
             var completedIds = progresses.Where(p => p.IsCompleted).Select(p => p.ChapterId).ToHashSet();
-            completedIds.Add(chapter.ChapterId); // just marked above
+            completedIds.Add(chapter.ChapterId); 
 
             if (moduleChapters.All(c => completedIds.Contains(c.ChapterId)))
             {

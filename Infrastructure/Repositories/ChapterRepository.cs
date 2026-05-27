@@ -49,7 +49,6 @@ namespace quiz_project.Infrastructure.Repositories
 
         public async Task<Chapter?> GetChapterByQuizIdForUserAsync(int quizId, int userId)
         {
-            // Prefer the chapter in a course the user is enrolled in (Approved)
             var fromEnrollment = await context.Chapters
                 .Where(c => c.QuizId == quizId)
                 .FirstOrDefaultAsync(c =>
@@ -60,8 +59,6 @@ namespace quiz_project.Infrastructure.Repositories
                             m.Chapters.Any(ch => ch.ChapterId == c.ChapterId))));
 
             if (fromEnrollment is not null) return fromEnrollment;
-
-            // Fall back: chapter in a course the user owns (creator testing their own quiz)
             return await context.Chapters
                 .Where(c => c.QuizId == quizId)
                 .FirstOrDefaultAsync(c =>

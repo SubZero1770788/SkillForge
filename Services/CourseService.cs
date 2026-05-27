@@ -30,11 +30,9 @@ namespace quiz_project.Services
 
         public async Task<(bool success, string error)> DeleteAsync(int courseId)
         {
-            // Load all modules (each includes Chapters) to collect R2 file paths before DB delete
             var modules = await moduleRepository.GetModulesByCourseIdAsync(courseId);
             foreach (var module in modules)
             {
-                // Chapter file attachments + chapter quiz images
                 foreach (var chapter in module.Chapters)
                 {
                     if (!string.IsNullOrEmpty(chapter.FilePath))
@@ -42,11 +40,9 @@ namespace quiz_project.Services
                     await DeleteQuizImagesAsync(chapter.QuizId);
                 }
 
-                // Module roadmap file
                 if (!string.IsNullOrEmpty(module.RoadmapFilePath))
                     await fileStorageService.DeleteAsync(module.RoadmapFilePath);
 
-                // Module quiz images
                 await DeleteQuizImagesAsync(module.QuizId);
             }
 

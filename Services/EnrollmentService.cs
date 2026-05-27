@@ -77,7 +77,7 @@ namespace quiz_project.Services
                 Enrollments = enrollments.Select(e => new EnrollmentItemViewModel
                 {
                     EnrollmentId = e.CourseEnrollmentId,
-                    UserName = e.User.UserName ?? "—",
+                    UserName = e.User.UserName ?? "-",
                     Status = e.Status,
                     EnrolledAt = e.EnrolledAt
                 }).ToList()

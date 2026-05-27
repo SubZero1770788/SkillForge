@@ -2,7 +2,7 @@
 
 <div class="stats-wrapper">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="stats-title">Statistics — @Model.Title</h3>
+        <h3 class="stats-title">Statistics-@Model.Title</h3>
         <a asp-controller="Course" asp-action="Index" class="btn btn-danger text-white">Return</a>
     </div>
 
@@ -47,7 +47,7 @@
         <div class="card mb-3">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div>
-                    <strong>Module @module.Order — @module.Title</strong>
+                    <strong>Module @module.Order-@module.Title</strong>
                     @if (module.QuizId.HasValue)
                     {
                         <span class="badge bg-warning text-dark ms-2">

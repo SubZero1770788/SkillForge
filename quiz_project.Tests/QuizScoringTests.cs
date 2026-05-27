@@ -10,13 +10,8 @@ using quiz_project.ViewModels;
 
 namespace quiz_project.Tests;
 
-/// <summary>
-/// Tests for the scoring logic inside QuizGameService.FinishAttemptAsync,
-/// triggered by submitting the last page of a quiz (empty next page).
-/// </summary>
 public class QuizScoringTests
 {
-    // ── Builder ──────────────────────────────────────────────────────────────
 
     private static (QuizGameService svc, Mock<IAttemptRepository> attemptRepo, Mock<IOnGoingQuizRepository> ongoingRepo, Mock<IQuizRepository> quizRepo)
         BuildSvc()
@@ -55,11 +50,6 @@ public class QuizScoringTests
 
         return (svc, attemptRepo, ongoingRepo, quizRepo);
     }
-
-    /// <summary>
-    /// Sets up a quiz state where CurrentPage=2 with only 1 question (pageSize=5),
-    /// so page 2 is empty → triggers FinishAttemptAsync with the pre-saved answers.
-    /// </summary>
     private static OnGoingQuizState MakeFinishedState(int quizId, int userId,
         List<AnswerState> answers, List<int> questionIds)
     {
@@ -67,7 +57,7 @@ public class QuizScoringTests
         {
             QuizId = quizId,
             UserId = userId,
-            CurrentPage = 2,   // page 2 will be empty → triggers finish
+            CurrentPage = 2,   
             QuestionCount = 5,
             Questions = questionIds
                 .Select((id, i) => new OnGoingQuizQuestion { QuestionId = id, Order = i })
@@ -107,7 +97,6 @@ public class QuizScoringTests
     private static Quiz StandaloneQuiz(int quizId, int totalScore, int passPerc = 0) =>
         new() { QuizId = quizId, Title = "T", Description = "D", UserId = 1, TotalScore = totalScore, PassPercentage = passPerc };
 
-    // ── MultipleChoice ───────────────────────────────────────────────────────
 
     [Fact]
     public async Task MultipleChoice_AllCorrectAnswers_GetsFullScore()
@@ -156,14 +145,13 @@ public class QuizScoringTests
     [Fact]
     public async Task MultipleChoice_PartialCorrect_GetsZero()
     {
-        // Selecting only one of two required answers → not exact match → 0
         var (svc, attemptRepo, ongoingRepo, quizRepo) = BuildSvc();
 
         var question = ClosedQuestion(1, 10,
             [(1, true), (2, true), (3, false)]);
 
         var state = MakeFinishedState(quizId: 1, userId: 7,
-            answers: [new AnswerState { QuestionId = 1, AnswersId = [1] }],   // only 1 of 2 correct
+            answers: [new AnswerState { QuestionId = 1, AnswersId = [1] }],  
             questionIds: [1]);
 
         ongoingRepo.Setup(r => r.GetAsync(7, 1)).ReturnsAsync(state);
@@ -197,7 +185,6 @@ public class QuizScoringTests
             r.CreateAsync(It.Is<QuizAttempt>(a => a.Score == 0)), Times.Once);
     }
 
-    // ── FillInTheBlank ───────────────────────────────────────────────────────
 
     [Fact]
     public async Task FillInTheBlank_MatchingKeyword_GetsFullScore()
@@ -283,7 +270,6 @@ public class QuizScoringTests
             r.CreateAsync(It.Is<QuizAttempt>(a => a.Score == 0)), Times.Once);
     }
 
-    // ── OpenWithImage ────────────────────────────────────────────────────────
 
     [Fact]
     public async Task OpenWithImage_KeywordGrading_Match_GetsFullScore()
@@ -332,16 +318,15 @@ public class QuizScoringTests
             Times.Once);
     }
 
-    // ── Multiple questions ───────────────────────────────────────────────────
 
     [Fact]
     public async Task MixedQuestions_ScoreSumsCorrectly()
     {
         var (svc, attemptRepo, ongoingRepo, quizRepo) = BuildSvc();
 
-        var q1 = ClosedQuestion(1, 10, [(1, true), (2, false)]);             // will answer correctly  → +10
-        var q2 = ClosedQuestion(2, 10, [(3, true), (4, false)]);             // wrong answer           → +0
-        var q3 = OpenQuestion(3, 20, "key");                                  // correct keyword        → +20
+        var q1 = ClosedQuestion(1, 10, [(1, true), (2, false)]);             
+        var q2 = ClosedQuestion(2, 10, [(3, true), (4, false)]);            
+        var q3 = OpenQuestion(3, 20, "key");                                 
 
         var state = MakeFinishedState(quizId: 1, userId: 7,
             answers:
@@ -361,8 +346,6 @@ public class QuizScoringTests
         attemptRepo.Verify(r =>
             r.CreateAsync(It.Is<QuizAttempt>(a => a.Score == 30)), Times.Once);
     }
-
-    // ── Answer selections are stored ─────────────────────────────────────────
 
     [Fact]
     public async Task ClosedQuestion_AnswerSelections_StoredWithCorrectness()

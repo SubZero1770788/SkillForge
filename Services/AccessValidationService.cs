@@ -26,7 +26,6 @@ namespace quiz_project.Services
             {
                 var q = quizViewModel.Questions[i];
 
-                // Open-text question types don't use answer options
                 if (q.Type == QuestionType.FillInTheBlank || q.Type == QuestionType.OpenWithImage)
                     continue;
 

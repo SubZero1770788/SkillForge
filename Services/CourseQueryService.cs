@@ -108,7 +108,6 @@ namespace quiz_project.Services
                 };
             }).ToList();
 
-            // Enrolled + approved users list
             var enrollments = await enrollmentRepository.GetByCourseAsync(courseId);
             var enrolledUsers = enrollments
                 .Where(e => e.Status == EnrollmentStatus.Approved)

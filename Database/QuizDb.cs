@@ -31,7 +31,6 @@ namespace quiz_project.Database
                     .HasForeignKey(m => m.CourseId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                // Only one public course may have a given title (case-insensitive enforced at app level)
                 en.HasIndex(c => c.Title)
                     .HasFilter("\"IsPublic\" = 1")
                     .IsUnique();
@@ -96,7 +95,7 @@ namespace quiz_project.Database
                     .HasForeignKey(qu => qu.QuizId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                // Only one public quiz may have a given title (case-insensitive enforced at app level)
+
                 en.HasIndex(q => q.Title)
                     .HasFilter("\"IsPublic\" = 1")
                     .IsUnique();
@@ -242,7 +241,7 @@ namespace quiz_project.Database
                     .WithMany()
                     .HasForeignKey(ca => ca.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
-                ca.HasIndex(ca => ca.UserId).IsUnique(); // one application per user
+                ca.HasIndex(ca => ca.UserId).IsUnique();
             });
 
             mb.Entity<QuizReminderItem>(r =>

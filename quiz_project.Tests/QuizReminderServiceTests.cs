@@ -8,8 +8,6 @@ namespace quiz_project.Tests;
 
 public class QuizReminderServiceTests
 {
-    // ── GetIntervalDays (pure static) ───────────────────────────────────────
-
     [Theory]
     [InlineData(0, 3)]
     [InlineData(1, 7)]
@@ -17,9 +15,9 @@ public class QuizReminderServiceTests
     [InlineData(3, 24)]
     [InlineData(4, 35)]
     [InlineData(5, 46)]
-    [InlineData(6, 57)]   // 46 + (6-5)*11
-    [InlineData(7, 68)]   // 46 + (7-5)*11
-    [InlineData(10, 101)] // 46 + (10-5)*11
+    [InlineData(6, 57)]  
+    [InlineData(7, 68)]  
+    [InlineData(10, 101)] 
     public void GetIntervalDays_ReturnsCorrectInterval(int index, int expectedDays)
     {
         QuizReminderService.GetIntervalDays(index).Should().Be(expectedDays);
@@ -31,7 +29,6 @@ public class QuizReminderServiceTests
         QuizReminderService.GetIntervalDays(-1).Should().Be(3);
     }
 
-    // ── OnQuizAttemptFinishedAsync ──────────────────────────────────────────
 
     private static QuizReminderService BuildService(
         Mock<IQuizReminderRepository> repoMock,
@@ -95,11 +92,9 @@ public class QuizReminderServiceTests
         var svc = BuildService(repo);
         await svc.OnQuizAttemptFinishedAsync(userId: 1, quizId: 42, passed: true);
 
-        // After pass: index becomes 1 → interval 7 days
         reminder.NextReviewDate.Should().BeAfter(before.AddDays(6));
     }
 
-    // ── AddReminderAsync ────────────────────────────────────────────────────
 
     [Fact]
     public async Task AddReminder_WhenAlreadyExists_DoesNotAddAgain()

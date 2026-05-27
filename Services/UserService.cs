@@ -114,11 +114,9 @@ namespace quiz_project.Services
             if (!created.Succeeded)
                 return (false, string.Join("; ", created.Errors.Select(e => e.Description)));
 
-            // Creator applicants get the User role so they can log in and browse
             var userRole = await roleManager.FindByNameAsync("User");
             await userManager.AddToRoleAsync(user, userRole!.Name!);
 
-            // Register the application — awaits admin approval
             await creatorApplicationRepository.AddAsync(new CreatorApplication
             {
                 UserId = user.Id,
@@ -127,7 +125,6 @@ namespace quiz_project.Services
                 AppliedAt = DateTime.UtcNow
             });
 
-            // Don't auto-sign-in; show a "pending approval" page instead
             return (true, string.Empty);
         }
 

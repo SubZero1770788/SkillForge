@@ -7,11 +7,6 @@ using quiz_project.ViewModels;
 
 namespace quiz_project.Tests;
 
-/// <summary>
-/// Tests for ChapterService.TryCompleteModuleByQuizAsync —
-/// the logic that marks a module complete when its quiz is passed
-/// and all chapters are already done.
-/// </summary>
 public class TryCompleteModuleByQuizTests
 {
     private static Module MakeModule(int id = 10, bool requireQuizPass = true, int? quizId = 99) =>
@@ -47,7 +42,6 @@ public class TryCompleteModuleByQuizTests
             fileStorage.Object);
     }
 
-    // ── Module not found ─────────────────────────────────────────────────────
 
     [Fact]
     public async Task TryComplete_ModuleNotFound_DoesNothing()
@@ -62,7 +56,6 @@ public class TryCompleteModuleByQuizTests
         progressRepo.Verify(r => r.MarkModuleCompletedAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
-    // ── RequireQuizPass = false ──────────────────────────────────────────────
 
     [Fact]
     public async Task TryComplete_ModuleDoesNotRequireQuizPass_DoesNothing()
@@ -77,7 +70,6 @@ public class TryCompleteModuleByQuizTests
         progressRepo.Verify(r => r.MarkModuleCompletedAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
-    // ── Quiz not passed ──────────────────────────────────────────────────────
 
     [Fact]
     public async Task TryComplete_QuizFailed_DoesNotComplete()
@@ -97,7 +89,6 @@ public class TryCompleteModuleByQuizTests
         progressRepo.Verify(r => r.MarkModuleCompletedAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
-    // ── Not all chapters completed ───────────────────────────────────────────
 
     [Fact]
     public async Task TryComplete_SomeChaptersIncomplete_DoesNotComplete()
@@ -123,7 +114,6 @@ public class TryCompleteModuleByQuizTests
         progressRepo.Verify(r => r.MarkModuleCompletedAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
-    // ── No chapters in module ────────────────────────────────────────────────
 
     [Fact]
     public async Task TryComplete_NoChaptersInModule_DoesNotComplete()
@@ -144,8 +134,6 @@ public class TryCompleteModuleByQuizTests
 
         progressRepo.Verify(r => r.MarkModuleCompletedAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
-
-    // ── Happy path: all conditions met ───────────────────────────────────────
 
     [Fact]
     public async Task TryComplete_AllChaptersComplete_QuizPassed_CompletesModule()
@@ -175,7 +163,6 @@ public class TryCompleteModuleByQuizTests
         progressRepo.Verify(r => r.MarkModuleCompletedAsync(7, 10), Times.Once);
     }
 
-    // ── PassPercentage = 0 → no threshold ───────────────────────────────────
 
     [Fact]
     public async Task TryComplete_PassPercentageZero_AnyScoreCountsAsPassed()
@@ -196,7 +183,7 @@ public class TryCompleteModuleByQuizTests
         progressRepo.Setup(r => r.MarkModuleCompletedAsync(7, 10)).Returns(Task.CompletedTask);
 
         var svc = BuildService(moduleRepo, quizRepo, progressRepo, chapterRepo);
-        // Even score 1/100 should count as passed when PassPercentage=0
+        
         await svc.TryCompleteModuleByQuizAsync(quizId: 99, userId: 7, score: 1, totalScore: 100);
 
         progressRepo.Verify(r => r.MarkModuleCompletedAsync(7, 10), Times.Once);

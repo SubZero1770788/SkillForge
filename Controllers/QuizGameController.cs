@@ -73,7 +73,6 @@ namespace quiz_project.Controllers
             var user = await userManager.GetUserAsync(User);
             if (user is null) return RedirectToAction("Register", "User")!;
 
-            // Verify the user can access this quiz (same check as during play)
             if (!await CanUserAccessQuizAsync(quizId, user))
                 return User.IsInRole("Creator")
                     ? RedirectToAction("Index", "Quiz")
@@ -86,9 +85,6 @@ namespace quiz_project.Controllers
                     ? RedirectToAction("Index", "Quiz")
                     : RedirectToAction("MyCourses", "Course");
 
-            // If this quiz belongs to a chapter, expose the chapterId so the view can link back.
-            // Use the user-scoped lookup so we always return the chapter from the user's own
-            // enrolled (or owned) course — not an unrelated course that happens to share the quiz.
             var chapter = await chapterRepository.GetChapterByQuizIdForUserAsync(quizId, user.Id);
             if (chapter is not null)
                 ViewBag.ReturnChapterId = chapter.ChapterId;
@@ -106,7 +102,6 @@ namespace quiz_project.Controllers
             var attempt = await attemptRepository.GetAttemptFullDetailAsync(attemptId);
             if (attempt is null) return NotFound();
 
-            // Students can only review their own attempts; creators/admins can see any
             if (attempt.UserId != user.Id && !User.IsInRole("Creator") && !User.IsInRole("Admin"))
                 return Forbid();
 
@@ -156,11 +151,10 @@ namespace quiz_project.Controllers
                 EarnedScore = attempt.Score,
                 TotalScore = quiz.TotalScore,
                 UserId = attempt.UserId,
-                CourseId = null  // back-navigation handled by the view via ReturnUrl
+                CourseId = null 
             };
             vm.Questions = questions;
 
-            // Pass the quizId so the view can link back to the Summary page
             ViewBag.ReturnQuizId = quiz.QuizId;
 
             return View(vm);
@@ -177,7 +171,6 @@ namespace quiz_project.Controllers
             if (await accessValidationService.UserOwnsQuizAsync(quizId, user))
                 return true;
 
-            // Enrolled users can access quizzes attached to their courses
             return await chapterRepository.UserHasEnrolledCourseWithQuizAsync(user.Id, quizId);
         }
     }

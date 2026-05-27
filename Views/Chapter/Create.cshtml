@@ -36,7 +36,7 @@
             <div class="form-group mb-3">
                 <label asp-for="QuizId">Linked quiz (optional)</label>
                 <select asp-for="QuizId" class="form-select">
-                    <option value="">— none —</option>
+                    <option value="">- none-</option>
                     @if (ViewBag.AvailableQuizzes != null)
                     {
                         @foreach (var quiz in ViewBag.AvailableQuizzes)

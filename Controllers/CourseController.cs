@@ -84,7 +84,6 @@ namespace quiz_project.Controllers
 
             var firstUncompleted = allChapters.FirstOrDefault(c => !completedIds.Contains(c.ChapterId));
 
-            // Collect all quiz IDs in the course
             var chapterQuizIds = allChapters.Where(c => c.QuizId.HasValue).Select(c => c.QuizId!.Value);
             var moduleQuizIds = modules.Where(m => m.QuizId.HasValue).Select(m => m.QuizId!.Value);
             var allQuizIds = chapterQuizIds.Concat(moduleQuizIds).Distinct().ToList();
@@ -92,7 +91,6 @@ namespace quiz_project.Controllers
             var attempts = await attemptRepository.GetBestUserAttemptsForQuizzesAsync(user.Id, allQuizIds);
             var attemptMap = attempts.ToDictionary(a => a.QuizId);
 
-            // Load quiz definitions so we always have title/score regardless of attempt status
             var quizDefs = await quizRepository.GetQuizzesByIdsAsync(allQuizIds);
 
             var quizResults = new List<CourseQuizResult>();
@@ -104,7 +102,7 @@ namespace quiz_project.Controllers
                 quizResults.Add(new CourseQuizResult
                 {
                     QuizId = qid,
-                    QuizTitle = ch.Title,                   // always use chapter name
+                    QuizTitle = ch.Title,
                     Context = quizDef?.Title ?? $"Quiz #{qid}",
                     BestScore = attempted ? att!.Score : 0,
                     TotalScore = quizDef?.TotalScore ?? att?.Quiz.TotalScore ?? 0,
@@ -120,7 +118,7 @@ namespace quiz_project.Controllers
                 quizResults.Add(new CourseQuizResult
                 {
                     QuizId = qid,
-                    QuizTitle = m.Title,                    // always use module name
+                    QuizTitle = m.Title,
                     Context = quizDef?.Title ?? $"Quiz #{qid}",
                     BestScore = attempted ? att!.Score : 0,
                     TotalScore = quizDef?.TotalScore ?? att?.Quiz.TotalScore ?? 0,
@@ -190,40 +188,6 @@ namespace quiz_project.Controllers
 
             return View(vm);
         }
-
-        // [HttpGet]
-        // public async Task<IActionResult> GetQuizAsync(int quizId)
-        // {
-        //     var user = await userManager.GetUserAsync(User);
-        //     if (user is null) return RedirectToAction("Register", "User")!;
-
-        //     var quiz = await quizRepository.GetQuizByIdAsync(quizId);
-        //     var quizModel = new QuizViewModel
-        //     {
-        //         Title = quiz.Title,
-        //         Description = quiz.Description
-        //     };
-
-        //     return View(quizModel);
-        // }
-
-        // [HttpGet, ActionName("Statistics")]
-        // public async Task<IActionResult> CheckQuizStats(int Id)
-        // {
-        //     var user = await userManager.GetUserAsync(User);
-        //     if (user is null) return RedirectToAction("Register", "User")!;
-
-        //     if (!await quizQueryService.CheckIfPublicAsync(Id) && !User.IsInRole("Admin"))
-        //     {
-        //         var owns = await accessValidationService.UserOwnsQuizAsync(Id, user);
-        //         if (!owns) return RedirectToAction("Index")!;
-        //     }
-
-        //     var (success, quizStatisticsModel) = await quizQueryService.GetQuizStatisticsAsync(Id, user.Id);
-        //     if (!success) return View("ZeroAttempts");
-
-        //     return View(quizStatisticsModel);
-        // }
 
         [HttpGet, ActionName("Create")]
         [Authorize(Roles = "Creator")]
@@ -324,7 +288,7 @@ namespace quiz_project.Controllers
                 CourseId = course.CourseId,
                 Title = course.Title,
                 Description = course.Description,
-                CreatorName = creator?.UserName ?? "—",
+                CreatorName = creator?.UserName ?? "-",
                 IsPaid = course.IsPaid,
                 IsSequential = course.IsSequential,
                 ModuleCount = modules.Count,
@@ -460,21 +424,5 @@ namespace quiz_project.Controllers
 
             return RedirectToAction("Index");
         }
-
-        // [HttpGet, ActionName("Game")]
-        // public async Task<IActionResult> LaunchCourseAsync(int courseId)
-        // {
-        //     var user = await userManager.GetUserAsync(User);
-        //     if (user is null) return RedirectToAction("Register", "User")!;
-        //     if (!await quizQueryService.CheckIfPublicAsync(quizId) && !User.IsInRole("Admin"))
-        //     {
-        //         var owns = await accessValidationService.UserOwnsQuizAsync(quizId, user);
-        //         if (!owns) return RedirectToAction("Index")!;
-        //     }
-
-        //     var quizViewModel = await quizGameService.LaunchQuizAsync(quizId);
-
-        //     return View(quizViewModel);
-        // }
     }
 }

@@ -4,7 +4,7 @@ using quiz_project.Entities.Definition;
 
 namespace quiz_project.ViewModels
 {
-    // ── User list ─────────────────────────────────────────────────────────
+
     public class AdminUserListViewModel
     {
         public List<AdminUserItem> Users { get; set; } = new();
@@ -24,7 +24,6 @@ namespace quiz_project.ViewModels
         public bool IsAdmin => Roles.Contains("Admin");
     }
 
-    // ── Creator applications ──────────────────────────────────────────────
     public class AdminApplicationsViewModel
     {
         public List<CreatorApplicationItem> Pending { get; set; } = new();
@@ -44,8 +43,6 @@ namespace quiz_project.ViewModels
         public DateTime? ReviewedAt { get; set; }
         public string? ReviewNote { get; set; }
     }
-
-    // ── Reject form ──────────────────────────────────────────────────────
     public class ReviewApplicationViewModel
     {
         public int ApplicationId { get; set; }

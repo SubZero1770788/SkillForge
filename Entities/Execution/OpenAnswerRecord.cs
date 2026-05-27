@@ -14,7 +14,6 @@ namespace quiz_project.Entities
 
         public string OpenText { get; set; } = "";
 
-        /// <summary>Score assigned by the creator during manual grading.</summary>
         public int? ManualScore { get; set; }
 
         public bool IsGraded { get; set; } = false;

@@ -3,14 +3,12 @@ using quiz_project.Entities.Definition;
 
 namespace quiz_project.ViewModels
 {
-    // ── Enrolled user list ────────────────────────────────────────────────
     public class EnrolledUserItem
     {
         public int UserId { get; set; }
         public string UserName { get; set; } = "";
     }
 
-    // ── All attempts for a user in a course ──────────────────────────────
     public class UserAttemptsViewModel
     {
         public int UserId { get; set; }
@@ -24,14 +22,13 @@ namespace quiz_project.ViewModels
     {
         public int AttemptId { get; set; }
         public string QuizTitle { get; set; } = "";
-        public string Context { get; set; } = "";  // e.g. "Chapter: Western Europe"
+        public string Context { get; set; } = ""; 
         public int Score { get; set; }
         public int TotalScore { get; set; }
         public double ScorePercent => TotalScore == 0 ? 0 : System.Math.Round((double)Score / TotalScore * 100, 1);
         public bool HasPendingGrading { get; set; }
     }
 
-    // ── Single attempt full detail ────────────────────────────────────────
     public class AttemptDetailViewModel
     {
         public int AttemptId { get; set; }
@@ -41,8 +38,6 @@ namespace quiz_project.ViewModels
         public int TotalScore { get; set; }
         public double ScorePercent => TotalScore == 0 ? 0 : System.Math.Round((double)EarnedScore / TotalScore * 100, 1);
         public List<AttemptQuestionDetail> Questions { get; set; } = new();
-
-        // Back-navigation
         public int? CourseId { get; set; }
         public int UserId { get; set; }
     }
@@ -54,11 +49,7 @@ namespace quiz_project.ViewModels
         public string? ImagePath { get; set; }
         public int MaxScore { get; set; }
         public int EarnedScore { get; set; }
-
-        // MultipleChoice / SingleChoice
         public List<AttemptAnswerOption> Options { get; set; } = new();
-
-        // FillInTheBlank / OpenWithImage
         public string? OpenText { get; set; }
         public bool IsGraded { get; set; }
         public int? ManualScore { get; set; }

@@ -16,8 +16,6 @@ namespace quiz_project.ViewModels
         public int TotalScore { get; set; }
         public double BestPercent => TotalScore == 0 ? 0 : Math.Round((double)BestScore / TotalScore * 100, 1);
         public bool Passed { get; set; }
-
-        // Reminder state
         public bool HasReminder { get; set; }
         public int? ReminderId { get; set; }
         public DateTime? NextReviewDate { get; set; }

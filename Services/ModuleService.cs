@@ -42,10 +42,9 @@ namespace quiz_project.Services
 
         public async Task DeleteAsync(int moduleId)
         {
-            var module = await moduleRepository.GetModuleByIdAsync(moduleId); // includes Chapters
+            var module = await moduleRepository.GetModuleByIdAsync(moduleId); 
             if (module is null) return;
 
-            // Delete chapter file attachments and their quiz images
             foreach (var chapter in module.Chapters)
             {
                 if (!string.IsNullOrEmpty(chapter.FilePath))
@@ -53,11 +52,9 @@ namespace quiz_project.Services
                 await DeleteQuizImagesAsync(chapter.QuizId);
             }
 
-            // Delete module roadmap file
             if (!string.IsNullOrEmpty(module.RoadmapFilePath))
                 await fileStorageService.DeleteAsync(module.RoadmapFilePath);
 
-            // Delete module quiz images
             await DeleteQuizImagesAsync(module.QuizId);
 
             await moduleRepository.DeleteModuleAsync(module);
